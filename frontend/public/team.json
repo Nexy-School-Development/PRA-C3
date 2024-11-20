@@ -1,0 +1,28 @@
+{
+  "teams": [
+    {
+      "name": "Team A",
+      "coach": "Rens",
+      "points": 120,
+      "wins": 10,
+      "loses": 3,
+      "matches_played": 13
+    },
+    {
+      "name": "Team B",
+      "coach": "Floris",
+      "points": 150,
+      "wins": 12,
+      "loses": 2,
+      "matches_played": 14
+    },
+    {
+      "name": "Team C",
+      "coach": "Armandooo",
+      "points": 150,
+      "wins": 12,
+      "loses": 2,
+      "matches_played": 14
+    }
+  ]
+}
