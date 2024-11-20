@@ -14,7 +14,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
 static bool IsAdmin(Testappcontext context, string token)
 {
     foreach (User u in context.Users)
@@ -27,9 +26,19 @@ static bool IsAdmin(Testappcontext context, string token)
     return false;
 }
 
-
 app.UseHttpsRedirection();
 Testappcontext context = new Testappcontext();
+app.MapGet("/users/validate", (string token) =>
+{
+
+    if (IsAdmin(context, token))
+    {
+        return Results.Ok("Admin");
+    }
+    return Results.Ok("User");
+}
+);
+
 app.MapGet("/users/login", (string email, string password) =>
 {
     foreach (User u in context.Users)
@@ -60,11 +69,13 @@ app.MapGet("/users/{id}", (int id, string token) =>
     return Results.BadRequest();
 
 });
+
 app.MapPost("/users", (User u) =>
 {
     context.Users.Add(u);
     context.SaveChanges();
 });
+
 app.MapDelete("/users/{id}", (int id) =>
 {
     User? usertodelete = context.Users.Find(id);
