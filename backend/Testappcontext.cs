@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 public class Testappcontext : DbContext
 {
-    public DbSet<models.User>? Users { get; set; }
+    public DbSet<models.User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

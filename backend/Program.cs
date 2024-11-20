@@ -21,4 +21,9 @@ app.MapGet("/users", () =>
     return context.Users.ToArray();
 });
 
+app.MapGet("/users/{id}", (int id) =>
+{
+    return context.Users.Find(id);
+});
+
 app.Run();
