@@ -26,6 +26,7 @@ namespace backend.Controllers
             }
             user.Password = Models.User.ComputeSha256Hash(user.Password);
             _context.Users.Add(user);
+            user.Balance = 50;
             _context.SaveChanges();
             return Ok(user);
         }
