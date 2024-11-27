@@ -8,6 +8,7 @@ public class Testappcontext : DbContext
     public DbSet<Match> Matches { get; set; }
     public DbSet<Bet> Bets { get; set; }
     public DbSet<Team> Teams { get; set; }
+    public DbSet<Tourney> Tourneys { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
