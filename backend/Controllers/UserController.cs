@@ -25,7 +25,7 @@ namespace backend.Controllers
             }
 
             user.Password = Models.User.ComputeSha256Hash(user.Password);
-            user.Balance = 50; // Default balance for new users
+            user.Balance = 50;
             _context.Users.Add(user);
             _context.SaveChanges();
             return Ok(user);
