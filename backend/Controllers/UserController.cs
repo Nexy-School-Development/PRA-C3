@@ -42,7 +42,6 @@ namespace backend.Controllers
             return Ok(user);
         }
 
-        // Retrieve All Users (GET)
         [HttpGet]
         public IActionResult GetAllUsers([FromHeader] string token)
         {
@@ -54,7 +53,6 @@ namespace backend.Controllers
             return Ok(_context.Users.ToList());
         }
 
-        // Retrieve Single User (GET by ID)
         [HttpGet("{id}")]
         public IActionResult GetUserById(int id, [FromHeader] string token)
         {
@@ -71,7 +69,6 @@ namespace backend.Controllers
             return Ok(user);
         }
 
-        // Reset Password (POST)
         [HttpPost("reset-password")]
         public IActionResult ResetPassword(string email, string newPassword)
         {
@@ -86,7 +83,6 @@ namespace backend.Controllers
             return Ok("Password reset successfully.");
         }
 
-        // Grant Admin Privileges (POST)
         [HttpPost("grant-admin/{id}")]
         public IActionResult GrantAdminPrivileges(int id, [FromHeader] string token)
         {
@@ -107,7 +103,6 @@ namespace backend.Controllers
             return Ok("Admin privileges granted successfully.");
         }
 
-        // Delete User (DELETE)
         [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id, [FromHeader] string token)
         {

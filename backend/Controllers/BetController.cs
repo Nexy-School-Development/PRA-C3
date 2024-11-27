@@ -16,7 +16,6 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // Get all bets (admin-only)
         [Authorize]
         [HttpGet]
         public IActionResult GetAllBets([FromHeader] string token)
@@ -31,7 +30,6 @@ namespace backend.Controllers
             return Ok(bets);
         }
 
-        // Place a bet
         [Authorize]
         [HttpPost]
         public IActionResult PlaceBet([FromBody] Bet bet, [FromHeader] string token)
@@ -64,7 +62,6 @@ namespace backend.Controllers
             return Created($"api/bet/{bet.Id}", bet);
         }
 
-        // Cancel a bet
         [Authorize]
         [HttpDelete("{id}")]
         public IActionResult CancelBet(int id, [FromHeader] string token)
@@ -88,7 +85,6 @@ namespace backend.Controllers
             return Ok("Bet cancelled.");
         }
 
-        // Admin: Resolve bets after tournament
         [Authorize]
         [HttpPost("resolve-bets")]
         public IActionResult ResolveBets([FromHeader] string token)
