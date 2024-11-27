@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using backend.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace backend.Controllers
 {
@@ -21,7 +22,7 @@ namespace backend.Controllers
         public IActionResult GetAllBets([FromHeader] string token)
         {
             var user = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (user == null || user.IsAdmin != true)
+             if (user == null || user.IsAdmin != true)
             {
                 return Forbid("Only admins can view all bets.");
             }
@@ -46,14 +47,15 @@ namespace backend.Controllers
                 return BadRequest("Insufficient balance.");
             }
 
-            var match = _context.Matches.Find(bet.Id);
+            var match = _context.Matches.Find(bet.Match.Id);
             if (match == null || match.IsFinished)
             {
                 return BadRequest("Match is invalid or already finished.");
             }
 
-            bet.Id = user.Id;
+            bet.User = user;
             bet.Prediction = bet.Prediction.ToLower();
+            bet.IsResolved = false;
             user.Balance -= bet.Amount;
 
             _context.Bets.Add(bet);
@@ -62,6 +64,7 @@ namespace backend.Controllers
             return Created($"api/bet/{bet.Id}", bet);
         }
 
+        // Cancel a bet
         [Authorize]
         [HttpDelete("{id}")]
         public IActionResult CancelBet(int id, [FromHeader] string token)
@@ -73,7 +76,7 @@ namespace backend.Controllers
             }
 
             var user = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (user == null || bet.Id != user.Id)
+            if (user == null || bet.User.Id != user.Id)
             {
                 return Forbid("You can only cancel your own bets.");
             }
@@ -85,6 +88,7 @@ namespace backend.Controllers
             return Ok("Bet cancelled.");
         }
 
+        // Admin: Resolve bets after tournament
         [Authorize]
         [HttpPost("resolve-bets")]
         public IActionResult ResolveBets([FromHeader] string token)
@@ -96,9 +100,9 @@ namespace backend.Controllers
             }
 
             var finishedMatches = _context.Matches.Where(m => m.IsFinished).ToList();
-            foreach (var bet in _context.Bets.ToList())
+            foreach (var bet in _context.Bets.Where(b => !b.IsResolved).ToList())
             {
-                var match = finishedMatches.SingleOrDefault(m => m.Id == bet.Id);
+                var match = finishedMatches.SingleOrDefault(m => m.Id == bet.Match.Id);
                 if (match != null)
                 {
                     bool isCorrect = bet.Prediction == "home" && match.Team1Score > match.Team2Score ||
@@ -107,16 +111,18 @@ namespace backend.Controllers
 
                     if (isCorrect)
                     {
-                        var betUser = _context.Users.Find(bet.Id);
-                        if (betUser != null)
-                        {
-                            betUser.Balance += bet.Amount * 2;
-                        }
+                        bet.Payout = bet.Amount * 2;
+                        bet.User.Balance += bet.Payout.Value;
+                    }
+                    else
+                    {
+                        bet.Payout = 0;
                     }
 
-                    _context.Bets.Remove(bet);
+                    bet.IsResolved = true;
                 }
             }
+
             _context.SaveChanges();
             return Ok("All bets have been resolved.");
         }
