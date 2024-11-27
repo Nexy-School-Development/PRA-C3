@@ -15,5 +15,8 @@ public class Match
     public int Team2Score { get; set; }
 
     public DateTime Starttime { get; set; }
+    public bool IsFinished { get; set; }
+    public ICollection<Bet> Bets { get; set; } = new List<Bet>();
+
 
 }
