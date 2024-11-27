@@ -33,8 +33,7 @@ namespace backend.Controllers
         [HttpPost("login")]
         public IActionResult Login(string email, string password)
         {
-
-            var user = _context.Users.ToList().SingleOrDefault(u => u.Email == email && u.ValidatePassword(password));
+            var user = _context.Users.SingleOrDefault(u => u.Email == email && u.ValidatePassword(password));
             if (user == null)
             {
                 return Unauthorized("Invalid email or password");
@@ -69,6 +68,42 @@ namespace backend.Controllers
                 return NotFound("User not found");
             }
             return Ok(user);
+        }
+
+        // Reset Password (POST)
+        [HttpPost("reset-password")]
+        public IActionResult ResetPassword(string email, string newPassword)
+        {
+            var user = _context.Users.SingleOrDefault(u => u.Email == email);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            user.Password = Models.User.ComputeSha256Hash(newPassword);
+            _context.SaveChanges();
+            return Ok("Password reset successfully.");
+        }
+
+        // Grant Admin Privileges (POST)
+        [HttpPost("grant-admin/{id}")]
+        public IActionResult GrantAdminPrivileges(int id, [FromHeader] string token)
+        {
+            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
+            if (requestingUser == null || (!requestingUser.IsAdmin ?? false))
+            {
+                return Forbid("Only admins can grant admin privileges");
+            }
+
+            var user = _context.Users.Find(id);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            user.IsAdmin = true;
+            _context.SaveChanges();
+            return Ok("Admin privileges granted successfully.");
         }
 
         // Delete User (DELETE)

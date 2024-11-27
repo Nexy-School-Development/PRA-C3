@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using backend.Models;
+using System.Linq;
 
 namespace backend.Controllers
 {
@@ -24,7 +25,14 @@ namespace backend.Controllers
                 return Unauthorized("User not logged in.");
             }
 
-            var teams = _context.Teams.ToList();
+            var teams = _context.Teams
+                .Select(t => new {
+                    t.Id,
+                    t.Name,
+                    t.Points,
+                    Players = _context.Users.Where(u => u.Id == t.Id).Select(u => new { u.Id, u.Email }).ToList()
+                }).ToList();
+
             return Ok(teams);
         }
 
@@ -67,6 +75,75 @@ namespace backend.Controllers
             _context.SaveChanges();
 
             return Ok(existingTeam);
+        }
+
+        [HttpPost("{Id}/add-player/{userId}")]
+        public IActionResult AddPlayerToTeam([FromHeader] string token, int Id, int userId)
+        {
+            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
+            if (requestingUser == null)
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            var team = _context.Teams.Find(Id);
+            if (team == null)
+            {
+                return NotFound("Team not found.");
+            }
+
+            if (team.CreatorId != requestingUser.Id)
+            {
+                return Forbid("You can only add players to teams you created.");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            if (user.Id == team.Id)
+            {
+                return BadRequest("User is already part of this team.");
+            }
+
+            user.Id = team.Id;
+            _context.SaveChanges();
+
+            return Ok("Player added to the team successfully.");
+        }
+
+        [HttpDelete("{Id}/remove-player/{userId}")]
+        public IActionResult RemovePlayerFromTeam([FromHeader] string token, int Id, int userId)
+        {
+            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
+            if (requestingUser == null)
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            var team = _context.Teams.Find(Id);
+            if (team == null)
+            {
+                return NotFound("Team not found.");
+            }
+
+            if (team.CreatorId != requestingUser.Id)
+            {
+                return Forbid("You can only remove players from teams you created.");
+            }
+
+            var user = _context.Users.Find(userId);
+            if (user == null || user.Id != team.Id)
+            {
+                return NotFound("Player not found in this team.");
+            }
+
+            user.Id = 0;
+            _context.SaveChanges();
+
+            return Ok("Player removed from the team successfully.");
         }
 
         [HttpDelete("{id}")]
