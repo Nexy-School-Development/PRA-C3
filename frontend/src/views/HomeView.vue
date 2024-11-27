@@ -1,28 +1,36 @@
-<script setup>
-import { ref } from 'vue'
-import TeamsTable from '../components/TeamTable.vue'
-
-const showTeamsTable = ref(false)
-
-const toggleTeamsTable = () => {
-  showTeamsTable.value = !showTeamsTable.value
-}
-</script>
-
 <template>
-  <main>
-    <TheWelcome />
-    <button @click="toggleTeamsTable">
-      {{ showTeamsTable ? 'Hide TeamTable' : 'Show TeamTable' }}
-    </button>
-    <TeamsTable v-if="showTeamsTable" />
-  </main>
+  <div>
+    <h1>Home</h1>
+    <div v-if="user">
+      <p>Welcome, {{ user.email }}</p>
+      <button @click="logout">Logout</button>
+    </div>
+    <div v-else>
+      <p>You are not logged in.</p>
+      <router-link to="/login">Login</router-link>
+      <router-link to="/register">Register</router-link>
+    </div>
+  </div>
 </template>
 
-<style scoped>
-button {
-  margin: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
+<script setup>
+import { ref, onMounted } from 'vue'
+
+const user = ref(null)
+
+const checkUser = () => {
+  const storedUser = localStorage.getItem('user')
+  if (storedUser) {
+    user.value = JSON.parse(storedUser)
+  }
 }
-</style>
+
+const logout = () => {
+  localStorage.removeItem('user')
+  user.value = null
+}
+
+onMounted(() => {
+  checkUser()
+})
+</script>
