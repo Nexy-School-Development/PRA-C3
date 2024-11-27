@@ -20,7 +20,7 @@ namespace backend.Controllers
         public IActionResult GenerateSchedule([FromHeader] string token, [FromBody] int fieldsAvailable)
         {
             var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null || (!requestingUser.IsAdmin ?? false))
+            if (requestingUser == null || (!requestingUser.IsAdmin??false))
             {
                 return Forbid("Only admins can generate schedules.");
             }
@@ -80,9 +80,11 @@ namespace backend.Controllers
             }
 
             var tourney = _context.Tourneys
-                .Select(t => new {
+                .Select(t => new
+                {
                     t.Name,
-                    Matches = t.Matches.Select(m => new {
+                    Matches = t.Matches.Select(m => new
+                    {
                         HomeTeam = m.HomeTeam.Name,
                         AwayTeam = m.AwayTeam.Name,
                         StartTime = m.Starttime,
