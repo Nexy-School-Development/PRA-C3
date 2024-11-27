@@ -39,5 +39,18 @@ public class Testappcontext : DbContext
             .HasOne(b => b.Match)
             .WithMany(m => m.Bets)
             .HasForeignKey(b => b.Id);
+
+        modelBuilder.Entity<Match>()
+            .HasOne(m => m.HomeTeam)
+            .WithMany(t => t.HomeMatches)
+            .HasForeignKey(m => m.HomeTeam);
+
+        modelBuilder.Entity<Match>()
+            .HasOne(m => m.AwayTeam)
+            .WithMany(t => t.AwayMatches)
+            .HasForeignKey(m => m.AwayTeam);
+
     }
+
+
 }

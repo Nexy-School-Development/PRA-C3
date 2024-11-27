@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using backend.Models;
 using Microsoft.AspNetCore.Authorization;
+using backend.DTOs;
 
 namespace backend.Controllers
 {
@@ -109,11 +110,5 @@ namespace backend.Controllers
             _context.SaveChanges();
             return Ok("Match result updated, and points assigned.");
         }
-    }
-
-    public class MatchResultDto
-    {
-        public int Team1Score { get; set; }
-        public int Team2Score { get; set; }
     }
 }
