@@ -35,7 +35,18 @@
       errorMessage.value = ''
     } catch (error) {
       console.error('Error registering user:', error)
-      errorMessage.value = error.response?.data || 'Error registering user'
+      if (error.response) {
+        console.error('Response data:', error.response.data)
+        console.error('Response status:', error.response.status)
+        console.error('Response headers:', error.response.headers)
+        errorMessage.value = error.response.data || 'Error registering user'
+      } else if (error.request) {
+        console.error('Request data:', error.request)
+        errorMessage.value = 'No response received from server'
+      } else {
+        console.error('Error message:', error.message)
+        errorMessage.value = 'Error registering user'
+      }
     }
   }
   </script>
