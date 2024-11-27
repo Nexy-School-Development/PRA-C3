@@ -2,19 +2,20 @@ using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace backend.models;
+namespace backend.Models;
 
 public class User
 {
-    public int id { get; set; }
-    public string email { get; set; }
-    public string password { get; set; }
+    public int Id { get; set; }
+    public string Email { get; set; }
+    public string Password { get; set; }
+    public string Goals { get; set; }
     public string IsAdmin { get; set; }
     public string Token { get; set; }
 
     public User()
     {
-        string toHash = email + password;
+        string toHash = Email + Password;
         Token = ComputeSha256Hash(toHash);
     }
 

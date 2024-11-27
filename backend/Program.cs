@@ -39,11 +39,11 @@ app.MapGet("/users/validate", (string token) =>
 }
 );
 
-app.MapGet("/users/login", (string email, string password) =>
+app.MapGet("/users/login", (string Email, string Password) =>
 {
     foreach (User u in context.Users)
     {
-        if (u.email == email && u.password == password)
+        if (u.Email == Email && u.Password == Password)
         {
             return Results.Ok(u.Token);
         }
