@@ -1,9 +1,13 @@
 namespace backend;
 using Microsoft.EntityFrameworkCore;
+using backend.Models;
 
 public class Testappcontext : DbContext
 {
-    public DbSet<Models.User> Users { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Match> Matches { get; set; }
+        public DbSet<Bet> Bets { get; set; }
+        public DbSet<Team> Teams  { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -17,10 +21,9 @@ public class Testappcontext : DbContext
             var user = db.Users.FirstOrDefault(u => u.Token == token);
             if (user != null)
             {
-                return user.IsAdmin;
+                return user.IsAdmin ?? false;
             }
             return false;
         }
     }
-
 }
