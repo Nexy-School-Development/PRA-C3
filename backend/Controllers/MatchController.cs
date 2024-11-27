@@ -40,7 +40,7 @@ namespace backend.Controllers
             var match = _context.Matches.Find(id);
             if (match == null)
             {
-                return NotFound("Match not found.");
+                return NotFound("Match not found");
             }
 
             match.HomeTeam = updatedMatch.HomeTeam;
@@ -54,16 +54,31 @@ namespace backend.Controllers
         }
 
         [Authorize]
+        [HttpDelete("{id}")]
+        public IActionResult DeleteMatch(int id)
+        {
+            var match = _context.Matches.Find(id);
+            if (match == null)
+            {
+                return NotFound("Match not found");
+            }
+
+            _context.Matches.Remove(match);
+            _context.SaveChanges();
+            return NoContent();
+        }
+
+        [Authorize]
         [HttpPut("{id}/result")]
         public IActionResult UpdateMatchResult(int id, [FromBody] MatchResultDto result, [FromHeader] string token)
         {
-            var admin = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (admin == null || admin.IsAdmin != true)
+            var user = _context.Users.SingleOrDefault(u => u.Token == token);
+            if (user == null || user.IsAdmin != true)
             {
                 return Forbid("Only admins can update match results.");
             }
 
-            var match = _context.Matches.Find(id);
+            var match = _context.Matches.SingleOrDefault(m => m.Id == id);
             if (match == null)
             {
                 return NotFound("Match not found.");
@@ -99,8 +114,8 @@ namespace backend.Controllers
         [HttpGet("played-matches")]
         public IActionResult GetPlayedMatches([FromHeader] string token)
         {
-            var user = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (user == null)
+            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
+            if (requestingUser == null)
             {
                 return Unauthorized("User not logged in.");
             }

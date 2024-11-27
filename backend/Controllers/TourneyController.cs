@@ -20,7 +20,7 @@ namespace backend.Controllers
         public IActionResult GenerateSchedule([FromHeader] string token, [FromBody] int fieldsAvailable)
         {
             var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null || (!requestingUser.IsAdmin??false))
+            if (requestingUser == null || (!requestingUser.IsAdmin ?? false))
             {
                 return Forbid("Only admins can generate schedules.");
             }

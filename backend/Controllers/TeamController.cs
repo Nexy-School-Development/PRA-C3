@@ -40,7 +40,6 @@ namespace backend.Controllers
             return Ok(teams);
         }
 
-
         [HttpPost]
         public IActionResult CreateTeam([FromHeader] string token, [FromBody] Team team)
         {

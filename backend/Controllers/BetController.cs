@@ -45,8 +45,8 @@ namespace backend.Controllers
                 return BadRequest("Insufficient balance.");
             }
 
-            var match = _context.Matches.SingleOrDefault(m => m.Id == bet.Match.Id && !m.IsFinished);
-            if (match == null)
+            var match = _context.Matches.Find(bet.Match.Id);
+            if (match == null || match.IsFinished)
             {
                 return BadRequest("Match is invalid or already finished.");
             }
@@ -89,8 +89,8 @@ namespace backend.Controllers
         [HttpPost("resolve-bets")]
         public IActionResult ResolveBets([FromHeader] string token)
         {
-            var admin = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (admin == null || admin.IsAdmin != true)
+            var user = _context.Users.SingleOrDefault(u => u.Token == token);
+            if (user == null || user.IsAdmin != true)
             {
                 return Forbid("Only admins can resolve bets.");
             }
@@ -101,9 +101,9 @@ namespace backend.Controllers
                 var match = finishedMatches.SingleOrDefault(m => m.Id == bet.Match.Id);
                 if (match != null)
                 {
-                    bool isCorrect = (bet.Prediction == "home" && match.Team1Score > match.Team2Score) ||
-                                     (bet.Prediction == "away" && match.Team1Score < match.Team2Score) ||
-                                     (bet.Prediction == "draw" && match.Team1Score == match.Team2Score);
+                    bool isCorrect = bet.Prediction == "home" && match.Team1Score > match.Team2Score ||
+                                     bet.Prediction == "away" && match.Team1Score < match.Team2Score ||
+                                     bet.Prediction == "draw" && match.Team1Score == match.Team2Score;
 
                     if (isCorrect)
                     {
