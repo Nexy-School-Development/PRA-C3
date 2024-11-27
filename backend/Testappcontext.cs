@@ -11,7 +11,7 @@ public class Testappcontext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseMySql(@"Server=localhost;User=root;Database=VoetbalApp", ServerVersion.Parse("8.0.21-mysql"));
+        optionsBuilder.UseMySql(@"Server=localhost;User=root;Database=voetbalapp", ServerVersion.Parse("8.0.21-mysql"));
     }
 
     public bool IsAdmin(string token)
