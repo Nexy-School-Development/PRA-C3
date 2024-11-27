@@ -32,7 +32,7 @@ namespace backend.Controllers
                     t.Name,
                     t.Points,
                     Players = _context.Users
-                        .Where(u => u.TeamId == t.Id)
+                        .Where(u => u.Id == t.Id)
                         .Select(u => new { u.Id, u.Email })
                         .ToList()
                 }).ToList();
