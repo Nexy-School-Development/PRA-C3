@@ -110,5 +110,29 @@ namespace backend.Controllers
             _context.SaveChanges();
             return Ok("Match result updated, and points assigned.");
         }
+
+        [HttpGet("played-matches")]
+        public IActionResult GetPlayedMatches([FromHeader] string token)
+        {
+            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
+            if (requestingUser == null)
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            var playedMatches = _context.Matches
+                .Where(m => m.IsFinished)
+                .Select(m => new
+                {
+                    MatchId = m.Id,
+                    HomeTeam = m.HomeTeam.Name,
+                    AwayTeam = m.AwayTeam.Name,
+                    Team1Score = m.Team1Score,
+                    Team2Score = m.Team2Score
+                }).ToList();
+
+            return Ok(playedMatches);
+        }
+
     }
 }

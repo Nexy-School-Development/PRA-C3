@@ -26,15 +26,20 @@ namespace backend.Controllers
             }
 
             var teams = _context.Teams
-                .Select(t => new {
+                .Select(t => new
+                {
                     t.Id,
                     t.Name,
                     t.Points,
-                    Players = _context.Users.Where(u => u.Id == t.Id).Select(u => new { u.Id, u.Email }).ToList()
+                    Players = _context.Users
+                        .Where(u => u.TeamId == t.Id)
+                        .Select(u => new { u.Id, u.Email })
+                        .ToList()
                 }).ToList();
 
             return Ok(teams);
         }
+
 
         [HttpPost]
         public IActionResult CreateTeam([FromHeader] string token, [FromBody] Team team)
