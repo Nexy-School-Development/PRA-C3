@@ -78,6 +78,11 @@ namespace backend.Controllers
                 return NotFound("User not found");
             }
 
+            if (string.IsNullOrEmpty(newPassword) || newPassword.Length < 6)
+            {
+                return BadRequest("Password must be at least 6 characters long.");
+            }
+
             user.Password = Models.User.ComputeSha256Hash(newPassword);
             _context.SaveChanges();
             return Ok("Password reset successfully.");
