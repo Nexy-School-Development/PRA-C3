@@ -21,7 +21,7 @@ namespace backend.Controllers
         public IActionResult GetAllBets([FromHeader] string token)
         {
             var user = _context.Users.SingleOrDefault(u => u.Token == token);
-             if (user == null || user.IsAdmin != true)
+            if (user == null || user.IsAdmin != true)
             {
                 return Forbid("Only admins can view all bets.");
             }
@@ -122,5 +122,30 @@ namespace backend.Controllers
             _context.SaveChanges();
             return Ok("All bets have been resolved.");
         }
+
+        [Authorize]
+        [HttpGet("user-bets")]
+        public IActionResult GetUserBets([FromHeader] string token)
+        {
+            var user = _context.Users.SingleOrDefault(u => u.Token == token);
+            if (user == null)
+            {
+                return Unauthorized("User not logged in.");
+            }
+
+            var bets = _context.Bets
+                .Where(b => b.User.Id == user.Id)
+                .Select(b => new
+                {
+                    MatchId = b.Match.Id,
+                    Prediction = b.Prediction,
+                    Amount = b.Amount,
+                    IsResolved = b.IsResolved,
+                    Payout = b.Payout
+                }).ToList();
+
+            return Ok(bets);
+        }
+
     }
 }
