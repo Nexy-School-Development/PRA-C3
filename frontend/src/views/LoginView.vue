@@ -22,7 +22,12 @@ const router = useRouter()
 
 const login = async () => {
   try {
-    const response = await axios.post(`http://localhost:5000/api/user/login?email=${encodeURIComponent(email.value)}&password=${encodeURIComponent(password.value)}`)
+    const response = await axios.post(`http://localhost:5116/api/User/login`, null, {
+      params: {
+        email: email.value,
+        password: password.value
+      }
+    })
     localStorage.setItem('user', JSON.stringify(response.data))
     console.log('User logged in:', response.data)
     router.push('/')

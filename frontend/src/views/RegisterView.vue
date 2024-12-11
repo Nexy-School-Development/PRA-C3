@@ -25,63 +25,24 @@ const password = ref('')
 const confirmPassword = ref('')
 const errorMessage = ref('')
 
-const question = ref('')
-const answer = ref('Questions usually contain a question mark. ;-)')
-const loading = ref(false)
-
-const register = async () => {
+function register() {
   if (password.value !== confirmPassword.value) {
     errorMessage.value = 'Passwords do not match'
     return
   }
 
-  const timeout = new Promise((_, reject) => 
-    setTimeout(() => reject(new Error('Request timed out')), 60000)
-  )
-
-  try {
-    const response = await Promise.race([
-      axios.post('http://localhost:5116/api/User/register', {
-        email: email.value,
-        password: password.value
-      }),
-      timeout
-    ])
-    console.log('User registered:', response.data)
-    errorMessage.value = ''
-  } catch (error) {
-    console.error('Error registering user:', error)
-    if (error.message === 'Request timed out') {
-      errorMessage.value = 'Request timed out'
-    } else if (error.response) {
-      console.error('Response data:', error.response.data)
-      console.error('Response status:', error.response.status)
-      console.error('Response headers:', error.response.headers)
-      errorMessage.value = error.response.data || 'Error registering user'
-    } else if (error.request) {
-      console.error('Request data:', error.request)
-      errorMessage.value = 'No response received from server'
-    } else {
-      console.error('Error message:', error.message)
-      errorMessage.value = 'Error registering user'
-    }
-  }
+  axios.post('http://localhost:5116/api/User/register', { email: email.value, password: password.value })
+    .then(() => {
+      errorMessage.value = ''
+      email.value = ''
+      password.value = ''
+      confirmPassword.value = ''
+    })
+    .catch(error => {
+      errorMessage.value = error.response.data.message
+    })
 }
 
-watch(question, async (newQuestion) => {
-  if (newQuestion.includes('?')) {
-    loading.value = true
-    answer.value = 'Thinking...'
-    try {
-      const res = await fetch('http://localhost:5116/api/User/register')
-      answer.value = (await res.json()).answer
-    } catch (error) {
-      answer.value = 'Error! Could not reach the API. ' + error
-    } finally {
-      loading.value = false
-    }
-  }
-})
 </script>
 
 <style scoped>
