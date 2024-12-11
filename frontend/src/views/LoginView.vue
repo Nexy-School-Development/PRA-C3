@@ -26,7 +26,7 @@ const login = async () => {
       params: {
         email: email.value,
         password: password.value
-      }
+      } 
     })
     localStorage.setItem('user', JSON.stringify(response.data))
     console.log('User logged in:', response.data)

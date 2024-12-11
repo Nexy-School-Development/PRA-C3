@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using backend.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Diagnostics;
 
 namespace backend.Controllers
 {
@@ -34,7 +35,12 @@ namespace backend.Controllers
         [HttpPost("login")]
         public IActionResult Login(string email, string password)
         {
-            var user = _context.Users.SingleOrDefault(u => u.Email == email && u.ValidatePassword(password));
+            var user = _context.Users.SingleOrDefault(u => u.Email == email);
+            if (user != null && user.ValidatePassword(password))
+            {
+                return Ok(user);
+            }
+            Debug.WriteLine($"{email}, {password}");
             if (user == null)
             {
                 return Unauthorized("Invalid email or password");
