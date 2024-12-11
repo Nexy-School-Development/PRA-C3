@@ -1,68 +1,47 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <header class="bg-blue-600 text-white p-5 shadow-lg">
+  <div class="min-h-screen bg-gray-100">
+    <header class="bg-green-600 text-white p-5 shadow-lg">
       <h1 class="text-3xl font-bold text-center">Team Management</h1>
     </header>
 
     <main class="container mx-auto p-5">
-      <!-- Create Team -->
       <section class="mb-10">
-        <h2 class="text-xl font-semibold mb-4">Create a New Team</h2>
-        <div class="flex flex-col gap-4 bg-white shadow-md p-6 rounded-lg">
-          <input
-            v-model="newTeam.name"
-            type="text"
-            placeholder="Team Name"
-            class="border border-gray-300 p-3 rounded-lg"
-          />
-          <button
-            @click="createTeam"
-            class="bg-blue-600 text-white py-3 px-5 rounded-lg hover:bg-blue-700"
-          >
-            Create Team
-          </button>
-          <p v-if="feedback" class="text-sm text-green-600">{{ feedback }}</p>
+        <h2 class="text-xl font-bold mb-4">Create a Team</h2>
+        <div class="bg-white shadow-md p-6 rounded-lg">
+          <input v-model="newTeam.name" type="text" placeholder="Team Name" class="input-field" />
+          <button @click="createTeam" class="btn-primary">Create Team</button>
         </div>
       </section>
 
-      <!-- Team List -->
       <section>
-        <h2 class="text-xl font-semibold mb-4">Team List</h2>
-        <div v-if="teams.length" class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <div
-            v-for="team in teams"
-            :key="team.id"
-            class="bg-white shadow-md p-6 rounded-lg border border-gray-200"
-          >
-            <h3 class="text-lg font-bold mb-2">{{ team.name }}</h3>
-            <p class="text-gray-600">Points: {{ team.points }}</p>
-            <ul class="mt-3">
-              <li
-                v-for="player in team.players"
-                :key="player.id"
-                class="text-sm text-gray-500"
-              >
-                {{ player.email }}
-              </li>
-            </ul>
-            <button
-              @click="deleteTeam(team.id)"
-              class="mt-4 text-sm text-red-600 hover:underline"
-            >
-              Delete Team
-            </button>
-          </div>
+        <h2 class="text-xl font-bold mb-4">Team List</h2>
+        <div class="bg-white shadow-md p-6 rounded-lg">
+          <table class="table-auto w-full">
+            <thead>
+              <tr class="bg-green-600 text-white">
+                <th class="p-3">Team Name</th>
+                <th class="p-3">Points</th>
+                <th class="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="team in teams" :key="team.id" class="border-t">
+                <td class="p-3">{{ team.name }}</td>
+                <td class="p-3">{{ team.points }}</td>
+                <td class="p-3">
+                  <button @click="deleteTeam(team.id)" class="btn-danger">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <p v-else class="text-center text-gray-500 mt-5">
-          No teams found. Start by creating one!
-        </p>
       </section>
     </main>
   </div>
 </template>
 
 <script>
-import axios from "axios";
+import apiClient from "../axios";
 
 export default {
   data() {
@@ -70,49 +49,34 @@ export default {
       teams: [],
       newTeam: {
         name: "",
+        points: 0,
       },
-      feedback: "",
     };
   },
   methods: {
     async fetchTeams() {
       try {
-        const response = await axios.get("http://localhost:5117/api/team", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const response = await apiClient.get("/team");
         this.teams = response.data;
       } catch (error) {
-        console.error("Failed to fetch teams", error);
+        console.error("Error fetching teams", error);
       }
     },
     async createTeam() {
-      if (!this.newTeam.name) {
-        this.feedback = "Team name is required.";
-        return;
-      }
       try {
-        await axios.post(
-          "http://localhost:5117/api/team",
-          this.newTeam,
-          {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-          }
-        );
-        this.feedback = "Team created successfully!";
+        await apiClient.post("/team", this.newTeam);
         this.newTeam.name = "";
         this.fetchTeams();
       } catch (error) {
-        console.error("Failed to create team", error);
+        console.error("Error creating team", error);
       }
     },
     async deleteTeam(teamId) {
       try {
-        await axios.delete(`http://localhost:5117/api/team/${teamId}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        await apiClient.delete(`/team/${teamId}`);
         this.fetchTeams();
       } catch (error) {
-        console.error("Failed to delete team", error);
+        console.error("Error deleting team", error);
       }
     },
   },
@@ -123,7 +87,39 @@ export default {
 </script>
 
 <style>
-body {
-  font-family: "Inter", sans-serif;
+.input-field {
+  width: 100%;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+.btn-primary {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+th {
+  background-color: #28a745;
+  color: white;
 }
 </style>

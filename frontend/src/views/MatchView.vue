@@ -1,56 +1,50 @@
 <template>
   <div class="min-h-screen bg-gray-100">
-    <header class="bg-blue-500 text-white p-5 shadow-lg">
+    <header class="bg-blue-600 text-white p-5 shadow-lg">
       <h1 class="text-3xl font-bold text-center">Match Management</h1>
     </header>
 
     <main class="container mx-auto p-5">
       <section class="mb-10">
-        <h2 class="text-xl font-bold mb-3">Create a Match</h2>
-        <div class="flex flex-col gap-4 bg-white shadow-md p-5 rounded-md">
-          <input v-model="newMatch.homeTeamId" type="number" placeholder="Home Team ID" class="border p-2 rounded-md" />
-          <input v-model="newMatch.awayTeamId" type="number" placeholder="Away Team ID" class="border p-2 rounded-md" />
-          <input v-model="newMatch.starttime" type="datetime-local" placeholder="Match Start Time"
-            class="border p-2 rounded-md" />
-          <button @click="createMatch" class="bg-blue-500 text-white p-2 rounded-md">
-            Create Match
-          </button>
+        <h2 class="text-xl font-bold mb-4">Create a Match</h2>
+        <div class="bg-white shadow-md p-6 rounded-lg">
+          <input v-model="newMatch.homeTeamId" type="number" placeholder="Home Team ID" class="input-field" />
+          <input v-model="newMatch.awayTeamId" type="number" placeholder="Away Team ID" class="input-field" />
+          <input v-model="newMatch.starttime" type="datetime-local" class="input-field" />
+          <button @click="createMatch" class="btn-primary">Create Match</button>
         </div>
       </section>
 
       <section>
-        <h2 class="text-xl font-bold mb-3">Match List</h2>
-        <div v-if="matches.length" class="bg-white shadow-md p-5 rounded-md">
-          <div v-for="match in matches" :key="match.id" class="mb-4 p-4 border rounded-md bg-gray-50">
-            <h3 class="text-lg font-bold mb-2">
-              {{ match.homeTeam.name }} vs. {{ match.awayTeam.name }}
-            </h3>
-            <p class="text-sm mb-2">
-              {{ new Date(match.starttime).toLocaleString() }}
-            </p>
-            <p class="text-sm mb-2">
-              Score: {{ match.team1Score }} - {{ match.team2Score }}
-            </p>
-            <p class="text-sm mb-2">
-              Status:
-              <span :class="{
-                'text-green-600': match.isFinished,
-                'text-red-600': !match.isFinished,
-              }">
-                {{ match.isFinished ? "Finished" : "Upcoming" }}
-              </span>
-            </p>
-            <button v-if="!match.isFinished && isAdmin" @click="updateMatchResult(match.id)"
-              class="bg-green-500 text-white p-2 rounded-md mr-2">
-              Update Result
-            </button>
-            <button v-if="isAdmin" @click="deleteMatch(match.id)" class="bg-red-500 text-white p-2 rounded-md">
-              Delete Match
-            </button>
-          </div>
-        </div>
-        <div v-else class="text-center text-gray-500 mt-5">
-          No matches available. Create one to get started.
+        <h2 class="text-xl font-bold mb-4">Match List</h2>
+        <div class="bg-white shadow-md p-6 rounded-lg">
+          <table class="table-auto w-full">
+            <thead>
+              <tr class="bg-blue-600 text-white">
+                <th class="p-3">Home Team</th>
+                <th class="p-3">Away Team</th>
+                <th class="p-3">Start Time</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="match in matches" :key="match.id" class="border-t">
+                <td class="p-3">{{ match.homeTeam.name }}</td>
+                <td class="p-3">{{ match.awayTeam.name }}</td>
+                <td class="p-3">{{ new Date(match.starttime).toLocaleString() }}</td>
+                <td class="p-3">
+                  <span :class="{ 'text-green-600': match.isFinished, 'text-red-600': !match.isFinished }">
+                    {{ match.isFinished ? 'Finished' : 'Upcoming' }}
+                  </span>
+                </td>
+                <td class="p-3">
+                  <button v-if="!match.isFinished" @click="updateMatchResult(match.id)" class="btn-secondary">Update</button>
+                  <button @click="deleteMatch(match.id)" class="btn-danger">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
     </main>
@@ -58,13 +52,11 @@
 </template>
 
 <script>
-import axios from "axios";
+import apiClient from "../axios";
 
 export default {
   data() {
     return {
-      token: "",
-      isAdmin: false,
       matches: [],
       newMatch: {
         homeTeamId: null,
@@ -76,51 +68,41 @@ export default {
   methods: {
     async fetchMatches() {
       try {
-        const response = await axios.get("http://localhost:5117/api/match", {
-          headers: { Authorization: `Bearer ${this.token}` },
-        });
+        const response = await apiClient.get("/match");
         this.matches = response.data;
       } catch (error) {
-        alert(error.response?.data || "Failed to fetch matches.");
+        console.error("Error fetching matches", error);
       }
     },
     async createMatch() {
       try {
-        await axios.post("http://localhost:5117/api/match", this.newMatch, {
-          headers: { Authorization: `Bearer ${this.token}` },
-        });
-        alert("Match created successfully!");
+        await apiClient.post("/match", this.newMatch);
         this.fetchMatches();
       } catch (error) {
-        alert(error.response?.data || "Failed to create match.");
+        console.error("Error creating match", error);
       }
     },
     async updateMatchResult(matchId) {
-      const team1Score = prompt("Enter score for Home Team:");
-      const team2Score = prompt("Enter score for Away Team:");
+      const team1Score = prompt("Enter Home Team score:");
+      const team2Score = prompt("Enter Away Team score:");
       if (team1Score === null || team2Score === null) return;
 
       try {
-        await axios.put(
-          `http://localhost:5000/api/match/${matchId}/result`,
-          { team1Score: parseInt(team1Score), team2Score: parseInt(team2Score) },
-          { headers: { Authorization: `Bearer ${this.token}` } }
-        );
-        alert("Match result updated successfully!");
+        await apiClient.put(`/match/${matchId}/result`, {
+          team1Score: parseInt(team1Score),
+          team2Score: parseInt(team2Score),
+        });
         this.fetchMatches();
       } catch (error) {
-        alert(error.response?.data || "Failed to update match result.");
+        console.error("Error updating match result", error);
       }
     },
     async deleteMatch(matchId) {
       try {
-        await axios.delete(`http://localhost:5000/api/match/${matchId}`, {
-          headers: { Authorization: `Bearer ${this.token}` },
-        });
-        alert("Match deleted successfully!");
+        await apiClient.delete(`/match/${matchId}`);
         this.fetchMatches();
       } catch (error) {
-        alert(error.response?.data || "Failed to delete match.");
+        console.error("Error deleting match", error);
       }
     },
   },
@@ -131,7 +113,48 @@ export default {
 </script>
 
 <style>
-body {
-  font-family: Arial, sans-serif;
+.input-field {
+  width: 100%;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  margin-right: 5px;
+  cursor: pointer;
+}
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+th {
+  background-color: #007bff;
+  color: white;
 }
 </style>

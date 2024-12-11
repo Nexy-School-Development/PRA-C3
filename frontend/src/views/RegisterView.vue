@@ -1,53 +1,75 @@
 <template>
-  <div>
-    <h1>Register</h1>
-    <form @submit.prevent="register">
-      <input v-model="email" type="email" placeholder="Email" required />
-      <input v-model="password" type="password" placeholder="Password" required />
-      <input v-model="confirmPassword" type="password" placeholder="Confirm Password" required />
-      <button type="submit">Register</button>
-    </form>
-    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-    <p>
-      Ask a yes/no question:
-      <input v-model="question" :disabled="loading" />
-    </p>
-    <p>{{ answer }}</p>
+  <div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="w-full max-w-md bg-white shadow-md rounded-lg p-6">
+      <h1 class="text-2xl font-bold text-center mb-6">Register</h1>
+      <form @submit.prevent="register" class="flex flex-col gap-4">
+        <input
+          v-model="email"
+          type="email"
+          placeholder="Email"
+          class="border border-gray-300 p-3 rounded-lg"
+          required
+        />
+        <input
+          v-model="password"
+          type="password"
+          placeholder="Password"
+          class="border border-gray-300 p-3 rounded-lg"
+          required
+        />
+        <input
+          v-model="confirmPassword"
+          type="password"
+          placeholder="Confirm Password"
+          class="border border-gray-300 p-3 rounded-lg"
+          required
+        />
+        <button
+          type="submit"
+          class="bg-green-600 text-white py-3 px-5 rounded-lg hover:bg-green-700"
+        >
+          Register
+        </button>
+        <p v-if="errorMessage" class="text-sm text-red-600">{{ errorMessage }}</p>
+      </form>
+    </div>
   </div>
 </template>
 
-<script setup>
-import { ref, watch } from 'vue'
-import axios from 'axios'
+<script>
+import apiClient from "../axios";
 
-const email = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-const errorMessage = ref('')
-
-function register() {
-  if (password.value !== confirmPassword.value) {
-    errorMessage.value = 'Passwords do not match'
-    return
-  }
-
-  axios.post('http://localhost:5116/api/User/register', { email: email.value, password: password.value })
-    .then(() => {
-      errorMessage.value = ''
-      email.value = ''
-      password.value = ''
-      confirmPassword.value = ''
-    })
-    .catch(error => {
-      errorMessage.value = error.response.data.message
-    })
-}
-
+export default {
+  data() {
+    return {
+      email: "",
+      password: "",
+      confirmPassword: "",
+      errorMessage: "",
+    };
+  },
+  methods: {
+    async register() {
+      if (this.password !== this.confirmPassword) {
+        this.errorMessage = "Passwords do not match.";
+        return;
+      }
+      try {
+        await apiClient.post("/user/register", {
+          email: this.email,
+          password: this.password,
+        });
+        this.$router.push("/login");
+      } catch (error) {
+        this.errorMessage = error.response?.data || "Registration failed.";
+      }
+    },
+  },
+};
 </script>
 
-<style scoped>
-.error {
-  color: red;
-  margin-top: 10px;
+<style>
+body {
+  font-family: "Inter", sans-serif;
 }
 </style>

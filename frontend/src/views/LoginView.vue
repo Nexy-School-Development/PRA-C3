@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50">
+  <div class="min-h-screen flex items-center justify-center bg-gray-100">
     <div class="w-full max-w-md bg-white shadow-md rounded-lg p-6">
       <h1 class="text-2xl font-bold text-center mb-6">Login</h1>
       <form @submit.prevent="login" class="flex flex-col gap-4">
@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import apiClient from "../axios";
 import { useRouter } from "vue-router";
 
 export default {
@@ -48,18 +48,12 @@ export default {
   methods: {
     async login() {
       try {
-        const response = await axios.post(
-          "http://localhost:5117/api/User/login",
-          null,
-          {
-            params: {
-              email: this.email,
-              password: this.password,
-            },
-          }
-        );
-        localStorage.setItem("token", response.data.token);
-        this.router.push("/dashboard");
+        const response = await apiClient.post("/user/login", {
+          email: this.email,
+          password: this.password,
+        });
+        localStorage.setItem("user", JSON.stringify(response.data));
+        this.router.push("/");
       } catch (error) {
         this.errorMessage = "Invalid email or password.";
       }

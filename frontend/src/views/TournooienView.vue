@@ -1,57 +1,42 @@
 <template>
-    <div class="min-h-screen bg-gray-100">
-      <header class="bg-sporty text-white p-5 shadow-lg">
-        <h1 class="text-3xl font-bold text-center">Tournament Scheduler</h1>
-      </header>
-  
-      <main class="container mx-auto p-5">
-        <section class="mb-10">
-          <h2 class="text-xl font-bold mb-3">Generate Schedule</h2>
-          <div class="flex flex-col gap-4 bg-white shadow-md p-5 rounded-md">
-            <input
-              v-model="token"
-              type="text"
-              placeholder="Enter Admin Token"
-              class="border p-2 rounded-md"
-            />
-            <input
-              v-model.number="fieldsAvailable"
-              type="number"
-              placeholder="Fields Available"
-              class="border p-2 rounded-md"
-            />
-            <button
-              @click="generateSchedule"
-              class="bg-sporty text-white p-2 rounded-md"
-            >
-              Generate
-            </button>
-          </div>
-        </section>
-  
-        <section>
-          <h2 class="text-xl font-bold mb-3">View Schedule</h2>
-          <div v-if="tourney" class="bg-white shadow-md p-5 rounded-md">
-            <h3 class="text-lg font-bold mb-2">{{ tourney.name }}</h3>
-            <table class="table-auto w-full text-left border-collapse">
+  <div class="min-h-screen bg-gray-100">
+    <header class="bg-purple-600 text-white p-5 shadow-lg">
+      <h1 class="text-3xl font-bold text-center">Tournament Management</h1>
+    </header>
+
+    <main class="container mx-auto p-5">
+      <section class="mb-10">
+        <h2 class="text-xl font-bold mb-4">Generate Tournament Schedule</h2>
+        <div class="bg-white shadow-md p-6 rounded-lg">
+          <input
+            v-model.number="fieldsAvailable"
+            type="number"
+            placeholder="Number of Fields Available"
+            class="input-field"
+          />
+          <button @click="generateSchedule" class="btn-primary">Generate Schedule</button>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-bold mb-4">Tournament Schedule</h2>
+        <div class="bg-white shadow-md p-6 rounded-lg">
+          <div v-if="tourney && tourney.matches.length" class="overflow-auto">
+            <table class="table-auto w-full text-left">
               <thead>
-                <tr class="bg-sporty text-white">
-                  <th class="p-2">Home Team</th>
-                  <th class="p-2">Away Team</th>
-                  <th class="p-2">Start Time</th>
-                  <th class="p-2">Status</th>
+                <tr class="bg-purple-600 text-white">
+                  <th class="p-3">Home Team</th>
+                  <th class="p-3">Away Team</th>
+                  <th class="p-3">Start Time</th>
+                  <th class="p-3">Status</th>
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  v-for="(match, index) in tourney.matches"
-                  :key="index"
-                  class="border-t"
-                >
-                  <td class="p-2">{{ match.HomeTeam }}</td>
-                  <td class="p-2">{{ match.AwayTeam }}</td>
-                  <td class="p-2">{{ new Date(match.StartTime).toLocaleString() }}</td>
-                  <td class="p-2">
+                <tr v-for="(match, index) in tourney.matches" :key="index" class="border-t">
+                  <td class="p-3">{{ match.HomeTeam }}</td>
+                  <td class="p-3">{{ match.AwayTeam }}</td>
+                  <td class="p-3">{{ new Date(match.StartTime).toLocaleString() }}</td>
+                  <td class="p-3">
                     <span
                       :class="{
                         'text-green-600': match.IsFinished,
@@ -65,57 +50,89 @@
               </tbody>
             </table>
           </div>
-          <div v-else class="text-center text-gray-500 mt-5">
-            No schedule available. Generate one or check your token.
-          </div>
-        </section>
-      </main>
-    </div>
-  </template>
-  
-  <script>
-  import axios from "axios";
-  
-  export default {
-    data() {
-      return {
-        token: "",
-        fieldsAvailable: 1,
-        tourney: null,
-      };
-    },
-    methods: {
-      async generateSchedule() {
-        try {
-          const response = await axios.post(
-            "http://localhost:5117/api/tourney/generate-schedule",
-            { fieldsAvailable: this.fieldsAvailable },
-            { headers: { token: this.token } }
-          );
-          alert("Schedule generated successfully!");
-          this.getSchedule();
-        } catch (error) {
-          alert(error.response?.data || "Failed to generate schedule.");
-        }
+          <div v-else class="text-gray-500 text-center mt-4">No schedule available. Generate one to get started.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+</template>
+
+<script>
+import apiClient from "../axios";
+
+export default {
+  data() {
+    return {
+      fieldsAvailable: 1,
+      tourney: {
+        matches: [],
       },
-      async getSchedule() {
-        try {
-          const response = await axios.get(
-            "http://localhost:5117/api/tourney/schedule",
-            { headers: { token: this.token } }
-          );
-          this.tourney = response.data;
-        } catch (error) {
-          alert(error.response?.data || "Failed to fetch schedule.");
-        }
-      },
+    };
+  },
+  methods: {
+    async generateSchedule() {
+      if (this.fieldsAvailable < 1) {
+        alert("Please specify at least one field.");
+        return;
+      }
+
+      try {
+        const response = await apiClient.post("/tourney/generate-schedule", {
+          fieldsAvailable: this.fieldsAvailable,
+        });
+        this.tourney = response.data;
+        alert("Tournament schedule generated successfully!");
+      } catch (error) {
+        console.error("Error generating schedule", error.response?.data || error);
+        alert("Failed to generate schedule.");
+      }
     },
-  };
-  </script>
-  
-  <style>
-  body {
-    font-family: Arial, sans-serif;
-  }
-  </style>
-  
+    async fetchSchedule() {
+      try {
+        const response = await apiClient.get("/tourney/schedule");
+        this.tourney = response.data;
+      } catch (error) {
+        console.error("Error fetching schedule", error.response?.data || error);
+        alert("Failed to fetch schedule.");
+      }
+    },
+  },
+  created() {
+    this.fetchSchedule();
+  },
+};
+</script>
+
+<style>
+.input-field {
+  width: 100%;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+.btn-primary {
+  background-color: #6f42c1;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background-color: #5a369d;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th,
+td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+th {
+  background-color: #6f42c1;
+  color: white;
+}
+</style>
