@@ -6,94 +6,67 @@
 
     <main class="container mx-auto p-5">
       <section class="mb-10">
-        <h2 class="text-xl font-bold mb-4">Generate Tournament Schedule</h2>
+        <h2 class="text-xl font-bold mb-4">Generate Schedule</h2>
         <div class="bg-white shadow-md p-6 rounded-lg">
-          <input
-            v-model.number="fieldsAvailable"
-            type="number"
-            placeholder="Number of Fields Available"
-            class="input-field"
-          />
-          <button @click="generateSchedule" class="btn-primary">Generate Schedule</button>
+          <input v-model.number="fieldsAvailable" type="number" placeholder="Fields Available" class="input-field" />
+          <button @click="generateSchedule" class="btn-primary">Generate</button>
         </div>
       </section>
 
       <section>
-        <h2 class="text-xl font-bold mb-4">Tournament Schedule</h2>
-        <div class="bg-white shadow-md p-6 rounded-lg">
-          <div v-if="tourney && tourney.matches.length" class="overflow-auto">
-            <table class="table-auto w-full text-left">
-              <thead>
-                <tr class="bg-purple-600 text-white">
-                  <th class="p-3">Home Team</th>
-                  <th class="p-3">Away Team</th>
-                  <th class="p-3">Start Time</th>
-                  <th class="p-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(match, index) in tourney.matches" :key="index" class="border-t">
-                  <td class="p-3">{{ match.HomeTeam }}</td>
-                  <td class="p-3">{{ match.AwayTeam }}</td>
-                  <td class="p-3">{{ new Date(match.StartTime).toLocaleString() }}</td>
-                  <td class="p-3">
-                    <span
-                      :class="{
-                        'text-green-600': match.IsFinished,
-                        'text-red-600': !match.IsFinished,
-                      }"
-                    >
-                      {{ match.IsFinished ? "Finished" : "Upcoming" }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div v-else class="text-gray-500 text-center mt-4">No schedule available. Generate one to get started.</div>
+        <h2 class="text-xl font-bold mb-4">View Schedule</h2>
+        <div v-if="tourney" class="bg-white shadow-md p-6 rounded-lg">
+          <h3 class="text-lg font-bold mb-4">{{ tourney.name }}</h3>
+          <table class="table-auto w-full text-left">
+            <thead>
+              <tr class="bg-purple-600 text-white">
+                <th class="p-3">Home Team</th>
+                <th class="p-3">Away Team</th>
+                <th class="p-3">Start Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="match in tourney.matches" :key="match.id" class="border-t">
+                <td class="p-3">{{ match.HomeTeam }}</td>
+                <td class="p-3">{{ match.AwayTeam }}</td>
+                <td class="p-3">{{ new Date(match.StartTime).toLocaleString() }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+        <div v-else class="text-center text-gray-500 mt-5">No schedule available. Generate one to view it here.</div>
       </section>
     </main>
   </div>
 </template>
 
 <script>
-import apiClient from "../axios";
+import apiClient from "@/axios";
 
 export default {
   data() {
     return {
       fieldsAvailable: 1,
-      tourney: {
-        matches: [],
-      },
+      tourney: null,
     };
   },
   methods: {
     async generateSchedule() {
-      if (this.fieldsAvailable < 1) {
-        alert("Please specify at least one field.");
-        return;
-      }
-
       try {
-        const response = await apiClient.post("/tourney/generate-schedule", {
+        await apiClient.post("/api/tourney/generate-schedule", {
           fieldsAvailable: this.fieldsAvailable,
         });
-        this.tourney = response.data;
-        alert("Tournament schedule generated successfully!");
+        this.fetchSchedule();
       } catch (error) {
-        console.error("Error generating schedule", error.response?.data || error);
-        alert("Failed to generate schedule.");
+        console.error("Error generating schedule", error);
       }
     },
     async fetchSchedule() {
       try {
-        const response = await apiClient.get("/tourney/schedule");
+        const response = await apiClient.get("/api/tourney/schedule");
         this.tourney = response.data;
       } catch (error) {
-        console.error("Error fetching schedule", error.response?.data || error);
-        alert("Failed to fetch schedule.");
+        console.error("Error fetching schedule", error);
       }
     },
   },
@@ -118,9 +91,6 @@ export default {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-}
-.btn-primary:hover {
-  background-color: #5a369d;
 }
 table {
   width: 100%;

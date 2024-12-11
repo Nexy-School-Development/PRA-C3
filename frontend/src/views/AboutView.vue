@@ -1,18 +1,26 @@
 <template>
-  <div class="min-h-screen bg-gray-100 flex items-center justify-center">
-    <div class="w-full max-w-2xl bg-white shadow-md rounded-lg p-6">
-      <h1 class="text-3xl font-bold mb-4 text-center">About This Application</h1>
-      <p class="text-gray-600 leading-relaxed">
-        Welcome to the Sports Management App! This application allows you to manage tournaments, matches, and teams easily.
-        It's built with Vue.js for the frontend and ASP.NET for the backend, ensuring a seamless experience for users and
-        administrators alike.
-      </p>
-    </div>
+  <div class="min-h-screen bg-gray-100">
+    <header class="bg-indigo-600 text-white p-5 shadow-lg">
+      <h1 class="text-3xl font-bold text-center">About Us</h1>
+    </header>
+
+    <main class="container mx-auto p-5">
+      <section class="bg-white shadow-md p-6 rounded-lg">
+        <p class="text-lg text-gray-700">
+          Welcome to our tournament platform! Here, you can manage matches, teams, and tournaments seamlessly. Our platform
+          aims to make sports management easy and accessible for everyone.
+        </p>
+      </section>
+    </main>
   </div>
 </template>
 
+<script>
+export default {};
+</script>
+
 <style>
-body {
-  font-family: "Inter", sans-serif;
+header {
+  background-color: #4c51bf;
 }
 </style>

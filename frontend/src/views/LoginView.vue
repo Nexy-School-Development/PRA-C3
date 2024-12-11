@@ -1,36 +1,24 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-100">
-    <div class="w-full max-w-md bg-white shadow-md rounded-lg p-6">
-      <h1 class="text-2xl font-bold text-center mb-6">Login</h1>
-      <form @submit.prevent="login" class="flex flex-col gap-4">
-        <input
-          v-model="email"
-          type="email"
-          placeholder="Email"
-          class="border border-gray-300 p-3 rounded-lg"
-          required
-        />
-        <input
-          v-model="password"
-          type="password"
-          placeholder="Password"
-          class="border border-gray-300 p-3 rounded-lg"
-          required
-        />
-        <button
-          type="submit"
-          class="bg-blue-600 text-white py-3 px-5 rounded-lg hover:bg-blue-700"
-        >
-          Login
-        </button>
-        <p v-if="errorMessage" class="text-sm text-red-600">{{ errorMessage }}</p>
-      </form>
-    </div>
+  <div class="min-h-screen bg-gray-100">
+    <header class="bg-blue-500 text-white p-5 shadow-lg">
+      <h1 class="text-3xl font-bold text-center">Login</h1>
+    </header>
+
+    <main class="container mx-auto p-5">
+      <section class="bg-white shadow-md p-6 rounded-lg max-w-md mx-auto">
+        <form @submit.prevent="login">
+          <input v-model="email" type="email" placeholder="Email" class="input-field" required />
+          <input v-model="password" type="password" placeholder="Password" class="input-field" required />
+          <button type="submit" class="btn-primary">Login</button>
+        </form>
+        <p v-if="errorMessage" class="text-red-500 mt-3">{{ errorMessage }}</p>
+      </section>
+    </main>
   </div>
 </template>
 
 <script>
-import apiClient from "../axios";
+import apiClient from "@/axios";
 import { useRouter } from "vue-router";
 
 export default {
@@ -41,19 +29,17 @@ export default {
       errorMessage: "",
     };
   },
-  setup() {
-    const router = useRouter();
-    return { router };
-  },
   methods: {
     async login() {
       try {
-        const response = await apiClient.post("/user/login", {
-          email: this.email,
-          password: this.password,
+        const response = await apiClient.post("/api/User/login", null, {
+          params: {
+            email: this.email,
+            password: this.password,
+          },
         });
         localStorage.setItem("user", JSON.stringify(response.data));
-        this.router.push("/");
+        this.$router.push("/");
       } catch (error) {
         this.errorMessage = "Invalid email or password.";
       }
@@ -63,7 +49,19 @@ export default {
 </script>
 
 <style>
-body {
-  font-family: "Inter", sans-serif;
+.input-field {
+  width: 100%;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 </style>

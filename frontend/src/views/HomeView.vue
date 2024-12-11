@@ -1,59 +1,74 @@
 <template>
   <div class="min-h-screen bg-gray-100">
-    <header class="bg-blue-600 text-white p-5 shadow-lg">
-      <h1 class="text-3xl font-bold text-center">Welcome to Your Profile</h1>
+    <header class="bg-indigo-600 text-white p-5 shadow-lg">
+      <h1 class="text-3xl font-bold text-center">Welcome to the Tournament Platform</h1>
     </header>
 
     <main class="container mx-auto p-5">
-      <section class="mb-10">
-        <h2 class="text-xl font-bold mb-4">Your Details</h2>
-        <div class="bg-white shadow-md p-6 rounded-lg">
-          <p><strong>Email:</strong> {{ user.email }}</p>
-          <p><strong>Balance:</strong> ${{ user.balance }}</p>
+      <section class="bg-white shadow-md p-6 rounded-lg">
+        <div v-if="user">
+          <h2 class="text-xl font-bold mb-3">Hello, {{ user.email }}</h2>
+          <p>Your current balance: <strong>{{ user.balance }}</strong></p>
+          <button @click="logout" class="btn-danger mt-4">Logout</button>
         </div>
-      </section>
-
-      <section>
-        <h2 class="text-xl font-bold mb-4">Actions</h2>
-        <button @click="logout" class="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700">
-          Logout
-        </button>
+        <div v-else>
+          <p>You are not logged in.</p>
+          <router-link to="/login" class="btn-primary mr-3">Login</router-link>
+          <router-link to="/register" class="btn-secondary">Register</router-link>
+        </div>
       </section>
     </main>
   </div>
 </template>
 
 <script>
-import apiClient from "../axios";
-
 export default {
   data() {
     return {
-      user: {},
+      user: null,
     };
   },
   methods: {
-    async fetchUser() {
-      try {
-        const response = await apiClient.get("/user/profile");
-        this.user = response.data;
-      } catch (error) {
-        console.error("Error fetching user details:", error);
+    checkUser() {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        this.user = JSON.parse(storedUser);
       }
     },
     logout() {
       localStorage.removeItem("user");
-      this.$router.push("/login");
+      this.user = null;
     },
   },
   created() {
-    this.fetchUser();
+    this.checkUser();
   },
 };
 </script>
 
 <style>
-body {
-  font-family: "Inter", sans-serif;
+.btn-primary {
+  background-color: #4c51bf;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 </style>

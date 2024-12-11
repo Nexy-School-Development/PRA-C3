@@ -18,7 +18,7 @@
       <section>
         <h2 class="text-xl font-bold mb-4">Match List</h2>
         <div class="bg-white shadow-md p-6 rounded-lg">
-          <table class="table-auto w-full">
+          <table class="table-auto w-full text-left">
             <thead>
               <tr class="bg-blue-600 text-white">
                 <th class="p-3">Home Team</th>
@@ -34,8 +34,13 @@
                 <td class="p-3">{{ match.awayTeam.name }}</td>
                 <td class="p-3">{{ new Date(match.starttime).toLocaleString() }}</td>
                 <td class="p-3">
-                  <span :class="{ 'text-green-600': match.isFinished, 'text-red-600': !match.isFinished }">
-                    {{ match.isFinished ? 'Finished' : 'Upcoming' }}
+                  <span
+                    :class="{
+                      'text-green-600': match.isFinished,
+                      'text-red-600': !match.isFinished,
+                    }"
+                  >
+                    {{ match.isFinished ? "Finished" : "Upcoming" }}
                   </span>
                 </td>
                 <td class="p-3">
@@ -52,7 +57,14 @@
 </template>
 
 <script>
-import apiClient from "../axios";
+import axios from "axios";
+
+const apiClient = axios.create({
+  baseURL: "http://localhost:5116/",
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+});
 
 export default {
   data() {
@@ -68,7 +80,7 @@ export default {
   methods: {
     async fetchMatches() {
       try {
-        const response = await apiClient.get("/match");
+        const response = await apiClient.get("api/match");
         this.matches = response.data;
       } catch (error) {
         console.error("Error fetching matches", error);
@@ -76,7 +88,7 @@ export default {
     },
     async createMatch() {
       try {
-        await apiClient.post("/match", this.newMatch);
+        await apiClient.post("api/match", this.newMatch);
         this.fetchMatches();
       } catch (error) {
         console.error("Error creating match", error);
@@ -88,7 +100,7 @@ export default {
       if (team1Score === null || team2Score === null) return;
 
       try {
-        await apiClient.put(`/match/${matchId}/result`, {
+        await apiClient.put(`api/match/${matchId}/result`, {
           team1Score: parseInt(team1Score),
           team2Score: parseInt(team2Score),
         });
@@ -99,7 +111,7 @@ export default {
     },
     async deleteMatch(matchId) {
       try {
-        await apiClient.delete(`/match/${matchId}`);
+        await apiClient.delete(`api/match/${matchId}`);
         this.fetchMatches();
       } catch (error) {
         console.error("Error deleting match", error);

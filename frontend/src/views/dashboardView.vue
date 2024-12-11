@@ -1,75 +1,131 @@
 <template>
   <div class="min-h-screen bg-gray-100">
-    <header class="bg-blue-600 text-white p-5 shadow-lg">
+    <header class="bg-gray-800 text-white p-5 shadow-lg">
       <h1 class="text-3xl font-bold text-center">Admin Dashboard</h1>
     </header>
 
     <main class="container mx-auto p-5">
-      <section class="mb-10">
+      <section>
         <h2 class="text-xl font-bold mb-4">Users</h2>
-        <table class="table-auto w-full bg-white shadow-md rounded-lg text-left">
-          <thead>
-            <tr class="bg-blue-600 text-white">
-              <th class="p-3">ID</th>
-              <th class="p-3">Email</th>
-              <th class="p-3">Balance</th>
-              <th class="p-3">Is Admin</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in users" :key="user.id" class="border-t">
-              <td class="p-3">{{ user.id }}</td>
-              <td class="p-3">{{ user.email }}</td>
-              <td class="p-3">{{ user.balance }}</td>
-              <td class="p-3">{{ user.isAdmin }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="bg-white shadow-md p-6 rounded-lg">
+          <table class="table-auto w-full text-left">
+            <thead>
+              <tr class="bg-gray-800 text-white">
+                <th class="p-3">ID</th>
+                <th class="p-3">Email</th>
+                <th class="p-3">Admin</th>
+                <th class="p-3">Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="user in users" :key="user.id" class="border-t">
+                <td class="p-3">{{ user.id }}</td>
+                <td class="p-3">{{ user.email }}</td>
+                <td class="p-3">{{ user.isAdmin }}</td>
+                <td class="p-3">{{ user.balance }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="mt-8">
+        <h2 class="text-xl font-bold mb-4">Teams</h2>
+        <div class="bg-white shadow-md p-6 rounded-lg">
+          <table class="table-auto w-full text-left">
+            <thead>
+              <tr class="bg-gray-800 text-white">
+                <th class="p-3">ID</th>
+                <th class="p-3">Name</th>
+                <th class="p-3">Points</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="team in teams" :key="team.id" class="border-t">
+                <td class="p-3">{{ team.id }}</td>
+                <td class="p-3">{{ team.name }}</td>
+                <td class="p-3">{{ team.points }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="mt-8">
+        <h2 class="text-xl font-bold mb-4">Matches</h2>
+        <div class="bg-white shadow-md p-6 rounded-lg">
+          <table class="table-auto w-full text-left">
+            <thead>
+              <tr class="bg-gray-800 text-white">
+                <th class="p-3">ID</th>
+                <th class="p-3">Home Team</th>
+                <th class="p-3">Away Team</th>
+                <th class="p-3">Start Time</th>
+                <th class="p-3">Finished</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="match in matches" :key="match.id" class="border-t">
+                <td class="p-3">{{ match.id }}</td>
+                <td class="p-3">{{ match.homeTeam.name }}</td>
+                <td class="p-3">{{ match.awayTeam.name }}</td>
+                <td class="p-3">{{ new Date(match.starttime).toLocaleString() }}</td>
+                <td class="p-3">{{ match.isFinished ? 'Yes' : 'No' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
   </div>
 </template>
 
 <script>
-import apiClient from "../axios";
+import apiClient from "@/axios";
 
 export default {
   data() {
     return {
       users: [],
+      teams: [],
+      matches: [],
     };
   },
   methods: {
-    async fetchUsers() {
+    async fetchDashboardData() {
       try {
-        const response = await apiClient.get("/user");
-        this.users = response.data;
+        const [usersResponse, teamsResponse, matchesResponse] = await Promise.all([
+          apiClient.get("/api/User"),
+          apiClient.get("/api/Team"),
+          apiClient.get("/api/Match"),
+        ]);
+
+        this.users = usersResponse.data;
+        this.teams = teamsResponse.data;
+        this.matches = matchesResponse.data;
       } catch (error) {
-        console.error("Error fetching users", error);
+        console.error("Error fetching dashboard data", error);
       }
     },
   },
   created() {
-    this.fetchUsers();
+    this.fetchDashboardData();
   },
 };
 </script>
 
 <style>
-body {
-  font-family: "Inter", sans-serif;
-}
-table {
+.table-auto {
   width: 100%;
   border-collapse: collapse;
 }
 th,
 td {
-  border: 1px solid #e2e8f0;
-  padding: 12px;
+  padding: 10px;
+  border: 1px solid #ddd;
 }
 th {
-  background-color: #2b6cb0;
+  background-color: #333;
   color: white;
 }
 </style>

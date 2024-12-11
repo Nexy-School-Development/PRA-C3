@@ -16,10 +16,10 @@
       <section>
         <h2 class="text-xl font-bold mb-4">Team List</h2>
         <div class="bg-white shadow-md p-6 rounded-lg">
-          <table class="table-auto w-full">
+          <table class="table-auto w-full text-left">
             <thead>
               <tr class="bg-green-600 text-white">
-                <th class="p-3">Team Name</th>
+                <th class="p-3">Name</th>
                 <th class="p-3">Points</th>
                 <th class="p-3">Actions</th>
               </tr>
@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import apiClient from "../axios";
+import apiClient from "@/axios";
 
 export default {
   data() {
@@ -49,22 +49,25 @@ export default {
       teams: [],
       newTeam: {
         name: "",
-        points: 0,
       },
     };
   },
   methods: {
     async fetchTeams() {
       try {
-        const response = await apiClient.get("/team");
+        const response = await apiClient.get("/api/team");
         this.teams = response.data;
       } catch (error) {
         console.error("Error fetching teams", error);
       }
     },
     async createTeam() {
+      if (!this.newTeam.name.trim()) {
+        alert("Team name is required.");
+        return;
+      }
       try {
-        await apiClient.post("/team", this.newTeam);
+        await apiClient.post("/api/team", this.newTeam);
         this.newTeam.name = "";
         this.fetchTeams();
       } catch (error) {
@@ -73,7 +76,7 @@ export default {
     },
     async deleteTeam(teamId) {
       try {
-        await apiClient.delete(`/team/${teamId}`);
+        await apiClient.delete(`/api/team/${teamId}`);
         this.fetchTeams();
       } catch (error) {
         console.error("Error deleting team", error);
@@ -114,7 +117,8 @@ table {
   width: 100%;
   border-collapse: collapse;
 }
-th, td {
+th,
+td {
   padding: 10px;
   border: 1px solid #ddd;
 }
