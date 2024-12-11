@@ -1,75 +1,75 @@
 <template>
-  <div>
-    <h1>Dashboard</h1>
+  <div class="min-h-screen bg-gray-100">
+    <header class="bg-blue-600 text-white p-5 shadow-lg">
+      <h1 class="text-3xl font-bold text-center">Admin Dashboard</h1>
+    </header>
 
-    <section>
-      <h2>Users</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Id</th>
-            <th>Email</th>
-            <th>Password</th>
-            <th>Token</th>
-            <th>IsAdmin</th>
-            <th>Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="user in users" :key="user.id">
-            <td>{{ user.id }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.password }}</td>
-            <td>{{ user.token }}</td>
-            <td>{{ user.isAdmin === 1 ? 'yes' : 'no' }}</td>
-            <td>{{ user.balance }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-    </section>
+    <main class="container mx-auto p-5">
+      <section class="mb-10">
+        <h2 class="text-xl font-bold mb-4">Users</h2>
+        <table class="table-auto w-full bg-white shadow-md rounded-lg text-left">
+          <thead>
+            <tr class="bg-blue-600 text-white">
+              <th class="p-3">ID</th>
+              <th class="p-3">Email</th>
+              <th class="p-3">Balance</th>
+              <th class="p-3">Is Admin</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="user in users" :key="user.id" class="border-t">
+              <td class="p-3">{{ user.id }}</td>
+              <td class="p-3">{{ user.email }}</td>
+              <td class="p-3">{{ user.balance }}</td>
+              <td class="p-3">{{ user.isAdmin }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+<script>
+import apiClient from "../axios";
 
-const users = ref([])
-const errorMessage = ref('')
-
-const fetchData = async () => {
-  try {
-    const usersResponse = await axios.get('http://localhost:5116/api/User')
-    users.value = usersResponse.data
-  } catch (error) {
-    console.error('Error fetching data:', error)
-    errorMessage.value = 'Error fetching data: ' + (error.response?.data?.message || error.message)
-  }
-}
-
-onMounted(fetchData)
+export default {
+  data() {
+    return {
+      users: [],
+    };
+  },
+  methods: {
+    async fetchUsers() {
+      try {
+        const response = await apiClient.get("/user");
+        this.users = response.data;
+      } catch (error) {
+        console.error("Error fetching users", error);
+      }
+    },
+  },
+  created() {
+    this.fetchUsers();
+  },
+};
 </script>
 
-<style scoped>
+<style>
+body {
+  font-family: "Inter", sans-serif;
+}
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
 }
-
-th, td {
-  border: 1px solid #ddd;
-  padding: 8px;
+th,
+td {
+  border: 1px solid #e2e8f0;
+  padding: 12px;
 }
-
 th {
-  background-color: black;
+  background-color: #2b6cb0;
   color: white;
-}
-
-.error {
-  color: red;
-  margin-top: 10px;
 }
 </style>
