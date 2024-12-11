@@ -74,7 +74,7 @@
     methods: {
       async fetchTeams() {
         try {
-          const response = await axios.get("http://localhost:5000/api/team", {
+          const response = await axios.get("http://localhost:5117/api/team", {
             headers: { token: this.token },
           });
           this.teams = response.data;
@@ -88,7 +88,7 @@
           return;
         }
         try {
-          await axios.post("http://localhost:5000/api/team", this.newTeam, {
+          await axios.post("http://localhost:5117/api/team", this.newTeam, {
             headers: { token: this.token },
           });
           alert("Team created successfully!");
@@ -100,7 +100,7 @@
       },
       async deleteTeam(teamId) {
         try {
-          await axios.delete(`http://localhost:5000/api/team/${teamId}`, {
+          await axios.delete(`http://localhost:5117/api/team/${teamId}`, {
             headers: { token: this.token },
           });
           alert("Team deleted successfully!");

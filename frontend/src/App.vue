@@ -6,7 +6,9 @@
         <router-link to="/login">Login</router-link>
         <router-link to="/register">Register</router-link>
         <router-link to="/dashboard">dashboard</router-link>
-
+          <router-link to="/match">match</router-link>
+          <router-link to="/team">team</router-link>
+          <router-link to="/tournooi">tournooi</router-link>
       </nav>
     </header>
     <RouterView />

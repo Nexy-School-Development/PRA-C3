@@ -114,10 +114,10 @@ const bets = ref([])
 const fetchData = async () => {
   try {
     const [usersResponse, teamsResponse, matchesResponse, betsResponse] = await Promise.all([
-      axios.get('http://localhost:5116//api/User'),
-      axios.get('http://localhost:5116//api/Team'),
-      axios.get('http://localhost:5116//api/Match'),
-      axios.get('http://localhost:5116//api/Bet')
+      axios.get('http://localhost:5116/api/User'),
+      axios.get('http://localhost:5116/api/Team'),
+      axios.get('http://localhost:5116/api/Match'),
+      axios.get('http://localhost:5116/api/Bet')
     ])
     users.value = usersResponse.data
     teams.value = teamsResponse.data

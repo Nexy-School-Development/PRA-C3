@@ -76,7 +76,7 @@ export default {
   methods: {
     async fetchMatches() {
       try {
-        const response = await axios.get("http://localhost:5000/api/match", {
+        const response = await axios.get("http://localhost:5117/api/match", {
           headers: { Authorization: `Bearer ${this.token}` },
         });
         this.matches = response.data;
@@ -86,7 +86,7 @@ export default {
     },
     async createMatch() {
       try {
-        await axios.post("http://localhost:5000/api/match", this.newMatch, {
+        await axios.post("http://localhost:5117/api/match", this.newMatch, {
           headers: { Authorization: `Bearer ${this.token}` },
         });
         alert("Match created successfully!");

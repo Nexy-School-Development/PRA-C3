@@ -88,7 +88,7 @@
       async generateSchedule() {
         try {
           const response = await axios.post(
-            "http://localhost:5000/api/tourney/generate-schedule",
+            "http://localhost:5117/api/tourney/generate-schedule",
             { fieldsAvailable: this.fieldsAvailable },
             { headers: { token: this.token } }
           );
@@ -101,7 +101,7 @@
       async getSchedule() {
         try {
           const response = await axios.get(
-            "http://localhost:5000/api/tourney/schedule",
+            "http://localhost:5117/api/tourney/schedule",
             { headers: { token: this.token } }
           );
           this.tourney = response.data;
