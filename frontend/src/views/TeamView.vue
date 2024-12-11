@@ -55,7 +55,7 @@ export default {
   methods: {
     async fetchTeams() {
       try {
-        const response = await apiClient.get("/api/team");
+        const response = await apiClient.get("/Team");
         this.teams = response.data;
       } catch (error) {
         console.error("Error fetching teams", error);
@@ -67,7 +67,7 @@ export default {
         return;
       }
       try {
-        await apiClient.post("/api/team", this.newTeam);
+        await apiClient.post("/Team", this.newTeam);
         this.newTeam.name = "";
         this.fetchTeams();
       } catch (error) {
@@ -76,7 +76,7 @@ export default {
     },
     async deleteTeam(teamId) {
       try {
-        await apiClient.delete(`/api/team/${teamId}`);
+        await apiClient.delete(`/Team/${teamId}`);
         this.fetchTeams();
       } catch (error) {
         console.error("Error deleting team", error);

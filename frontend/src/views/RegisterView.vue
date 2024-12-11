@@ -37,7 +37,7 @@ export default {
         return;
       }
       try {
-        await apiClient.post("/api/User/register", {
+        await apiClient.post("/User/register", {
           email: this.email,
           password: this.password,
         });
