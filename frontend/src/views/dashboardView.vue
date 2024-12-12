@@ -7,10 +7,18 @@
     <main class="container mx-auto p-5">
       <section>
         <h2 class="text-xl font-bold mb-4">Users</h2>
-        <div class="bg-white shadow-md p-6 rounded-lg">
-          <table class="table-auto w-full text-left">
+        <div v-if="users.length === 0" class="bg-white shadow-md p-6 rounded-lg text-center">
+          <p>Not found</p>
+        </div>
+        <div v-else>
+          <!-- Iterate over users and create a table for each -->
+          <table
+            v-for="user in users"
+            :key="user.Id"
+            class="table-auto w-full text-left mb-6 bg-gray-900 text-white rounded-lg overflow-hidden"
+          >
             <thead>
-              <tr class="bg-gray-800 text-white">
+              <tr class="bg-blue-600">
                 <th class="p-3">ID</th>
                 <th class="p-3">Email</th>
                 <th class="p-3">Admin</th>
@@ -18,59 +26,11 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="user in users" :key="user.id" class="border-t">
-                <td class="p-3">{{ user.id }}</td>
-                <td class="p-3">{{ user.email }}</td>
-                <td class="p-3">{{ user.isAdmin }}</td>
-                <td class="p-3">{{ user.balance }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="mt-8">
-        <h2 class="text-xl font-bold mb-4">Teams</h2>
-        <div class="bg-white shadow-md p-6 rounded-lg">
-          <table class="table-auto w-full text-left">
-            <thead>
-              <tr class="bg-gray-800 text-white">
-                <th class="p-3">ID</th>
-                <th class="p-3">Name</th>
-                <th class="p-3">Points</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="team in teams" :key="team.id" class="border-t">
-                <td class="p-3">{{ team.id }}</td>
-                <td class="p-3">{{ team.name }}</td>
-                <td class="p-3">{{ team.points }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="mt-8">
-        <h2 class="text-xl font-bold mb-4">Matches</h2>
-        <div class="bg-white shadow-md p-6 rounded-lg">
-          <table class="table-auto w-full text-left">
-            <thead>
-              <tr class="bg-gray-800 text-white">
-                <th class="p-3">ID</th>
-                <th class="p-3">Home Team</th>
-                <th class="p-3">Away Team</th>
-                <th class="p-3">Start Time</th>
-                <th class="p-3">Finished</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="match in matches" :key="match.id" class="border-t">
-                <td class="p-3">{{ match.id }}</td>
-                <td class="p-3">{{ match.homeTeam.name }}</td>
-                <td class="p-3">{{ match.awayTeam.name }}</td>
-                <td class="p-3">{{ new Date(match.starttime).toLocaleString() }}</td>
-                <td class="p-3">{{ match.isFinished ? 'Yes' : 'No' }}</td>
+              <tr class="border-t border-gray-700">
+                <td class="p-3">{{ user.Id }}</td>
+                <td class="p-3">{{ user.Email }}</td>
+                <td class="p-3">{{ formatAdmin(user.IsAdmin) }}</td>
+                <td class="p-3">{{ formatBalance(user.Balance) }}</td>
               </tr>
             </tbody>
           </table>
@@ -81,34 +41,42 @@
 </template>
 
 <script>
-import apiClient from "@/axios";
+import axios from 'axios';
 
 export default {
   data() {
     return {
-      users: [],
-      teams: [],
-      matches: [],
+      users: [], // Will hold user data fetched from API
     };
   },
   methods: {
     async fetchDashboardData() {
       try {
-        const [usersResponse, teamsResponse, matchesResponse] = await Promise.all([
-          apiClient.get("/api/User"),
-          apiClient.get("/api/Team"),
-          apiClient.get("/api/Match"),
-        ]);
-
-        this.users = usersResponse.data;
-        this.teams = teamsResponse.data;
-        this.matches = matchesResponse.data;
+        // Fetch user data from API
+        const response = await axios.get('http://localhost/pra-c3/frontend/database/getUsers.php');
+        if (response.data && Array.isArray(response.data)) {
+          this.users = response.data; // Bind fetched data to 'users'
+        } else {
+          console.error('Invalid API response format:', response.data);
+        }
       } catch (error) {
-        console.error("Error fetching dashboard data", error);
+        console.error('Error fetching user data:', error);
+        this.users = []; // Reset users in case of error
       }
+    },
+    formatBalance(balance) {
+      // Format balance to 2 decimal places or return '0.00' if null
+      return balance !== null
+        ? parseFloat(balance).toFixed(2)
+        : '0.00';
+    },
+    formatAdmin(isAdmin) {
+      // Return 'No' if IsAdmin is null
+      return isAdmin !== null ? 'Yes' : 'No';
     },
   },
   created() {
+    // Fetch data when component is created
     this.fetchDashboardData();
   },
 };
@@ -118,14 +86,22 @@ export default {
 .table-auto {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 1.5rem;
 }
 th,
 td {
   padding: 10px;
-  border: 1px solid #ddd;
+  text-align: left;
 }
-th {
-  background-color: #333;
+thead th {
+  background-color: #2563eb; /* Blue header */
+  color: white;
+}
+tbody tr {
+  border-top: 1px solid #4b5563; /* Dark gray for row borders */
+}
+tbody td {
+  background-color: #1f2937; /* Darker gray for rows */
   color: white;
 }
 </style>
