@@ -11,12 +11,8 @@
           <p>Not found</p>
         </div>
         <div v-else>
-          <!-- Iterate over users and create a table for each -->
-          <table
-            v-for="user in users"
-            :key="user.Id"
-            class="table-auto w-full text-left mb-6 bg-gray-900 text-white rounded-lg overflow-hidden"
-          >
+          <!-- Single table for all users -->
+          <table class="table-auto w-full text-left bg-gray-900 text-white rounded-lg overflow-hidden">
             <thead>
               <tr class="bg-blue-600">
                 <th class="p-3">ID</th>
@@ -26,7 +22,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="border-t border-gray-700">
+              <!-- Iterate over users and create a row for each -->
+              <tr v-for="user in users" :key="user.Id" class="border-t border-gray-700">
                 <td class="p-3">{{ user.Id }}</td>
                 <td class="p-3">{{ user.Email }}</td>
                 <td class="p-3">{{ formatAdmin(user.IsAdmin) }}</td>
@@ -94,14 +91,14 @@ td {
   text-align: left;
 }
 thead th {
-  background-color: #2563eb; /* Blue header */
+  background-color: #2563eb;
   color: white;
 }
 tbody tr {
-  border-top: 1px solid #4b5563; /* Dark gray for row borders */
+  border-top: 1px solid #4b5563;
 }
 tbody td {
-  background-color: #1f2937; /* Darker gray for rows */
+  background-color: #1f2937;
   color: white;
 }
 </style>
