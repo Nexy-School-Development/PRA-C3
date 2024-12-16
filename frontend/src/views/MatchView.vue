@@ -29,23 +29,23 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="match in matches" :key="match.id" class="border-t">
-                <td class="p-3">{{ match.homeTeam.name }}</td>
-                <td class="p-3">{{ match.awayTeam.name }}</td>
-                <td class="p-3">{{ new Date(match.starttime).toLocaleString() }}</td>
+              <tr v-for="match in matches" :key="match.Id" class="border-t">
+                <td class="p-3">{{ match.HomeTeamId }}</td>
+                <td class="p-3">{{ match.AwayTeamId }}</td>
+                <td class="p-3">{{ new Date(match.Starttime).toLocaleString() }}</td>
                 <td class="p-3">
                   <span
                     :class="{
-                      'text-green-600': match.isFinished,
-                      'text-red-600': !match.isFinished,
+                      'text-green-600': match.IsFinished,
+                      'text-red-600': !match.IsFinished,
                     }"
                   >
-                    {{ match.isFinished ? "Finished" : "Upcoming" }}
+                    {{ match.IsFinished ? "Finished" : "Upcoming" }}
                   </span>
                 </td>
                 <td class="p-3">
-                  <button v-if="!match.isFinished" @click="updateMatchResult(match.id)" class="btn-secondary">Update</button>
-                  <button @click="deleteMatch(match.id)" class="btn-danger">Delete</button>
+                  <button v-if="!match.IsFinished" @click="updateMatchResult(match.Id)" class="btn-secondary">Update</button>
+                  <button @click="deleteMatch(match.Id)" class="btn-danger">Delete</button>
                 </td>
               </tr>
             </tbody>
@@ -58,13 +58,6 @@
 
 <script>
 import axios from "axios";
-
-const apiClient = axios.create({
-  baseURL: "http://localhost:5116/",
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-});
 
 export default {
   data() {
@@ -80,7 +73,7 @@ export default {
   methods: {
     async fetchMatches() {
       try {
-        const response = await apiClient.get("api/match");
+        const response = await axios.get('http://localhost/pra-c3/frontend/database/getMatches.php');
         this.matches = response.data;
       } catch (error) {
         console.error("Error fetching matches", error);
@@ -88,7 +81,7 @@ export default {
     },
     async createMatch() {
       try {
-        await apiClient.post("api/match", this.newMatch);
+        await axios.post('http://localhost:5116/api/Match', this.newMatch);
         this.fetchMatches();
       } catch (error) {
         console.error("Error creating match", error);
@@ -100,7 +93,7 @@ export default {
       if (team1Score === null || team2Score === null) return;
 
       try {
-        await apiClient.put(`api/match/${matchId}/result`, {
+        await axios.put(`http://localhost:5116/api/Match/${matchId}/result`, {
           team1Score: parseInt(team1Score),
           team2Score: parseInt(team2Score),
         });
@@ -111,7 +104,7 @@ export default {
     },
     async deleteMatch(matchId) {
       try {
-        await apiClient.delete(`api/match/${matchId}`);
+        await axios.delete(`http://localhost:5116/api/Match/${matchId}`);
         this.fetchMatches();
       } catch (error) {
         console.error("Error deleting match", error);
