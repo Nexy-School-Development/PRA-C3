@@ -17,14 +17,8 @@ namespace backend.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetTeams([FromHeader] string token)
+        public IActionResult GetTeams()
         {
-            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null)
-            {
-                return Unauthorized("User not logged in.");
-            }
-
             var teams = _context.Teams
                 .Select(t => new
                 {
@@ -40,39 +34,21 @@ namespace backend.Controllers
             return Ok(teams);
         }
 
-        [HttpPost]
-        public IActionResult CreateTeam([FromHeader] string token, [FromBody] Team team)
+        [HttpPost("createteam")]
+        public IActionResult CreateTeam([FromBody] Team team)
         {
-            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null)
-            {
-                return Unauthorized("User not logged in.");
-            }
-
-            team.CreatorId = requestingUser.Id;
             _context.Teams.Add(team);
             _context.SaveChanges();
             return CreatedAtAction(nameof(GetTeams), new { id = team.Id }, team);
         }
 
-        [HttpPut("{id}")]
-        public IActionResult UpdateTeam([FromHeader] string token, int id, [FromBody] Team updatedTeam)
+        [HttpPut("update/{id}")]
+        public IActionResult UpdateTeam(int id, [FromBody] Team updatedTeam)
         {
-            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null)
-            {
-                return Unauthorized("User not logged in.");
-            }
-
             var existingTeam = _context.Teams.Find(id);
             if (existingTeam == null)
             {
                 return NotFound("Team not found.");
-            }
-
-            if (existingTeam.CreatorId != requestingUser.Id)
-            {
-                return Forbid("You can only update teams you created.");
             }
 
             existingTeam.Name = updatedTeam.Name;
@@ -82,23 +58,12 @@ namespace backend.Controllers
         }
 
         [HttpPost("{Id}/add-player/{userId}")]
-        public IActionResult AddPlayerToTeam([FromHeader] string token, int Id, int userId)
+        public IActionResult AddPlayerToTeam(int Id, int userId)
         {
-            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null)
-            {
-                return Unauthorized("User not logged in.");
-            }
-
             var team = _context.Teams.Find(Id);
             if (team == null)
             {
                 return NotFound("Team not found.");
-            }
-
-            if (team.CreatorId != requestingUser.Id)
-            {
-                return Forbid("You can only add players to teams you created.");
             }
 
             var user = _context.Users.Find(userId);
@@ -119,23 +84,12 @@ namespace backend.Controllers
         }
 
         [HttpDelete("{Id}/remove-player/{userId}")]
-        public IActionResult RemovePlayerFromTeam([FromHeader] string token, int Id, int userId)
+        public IActionResult RemovePlayerFromTeam(int Id, int userId)
         {
-            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null)
-            {
-                return Unauthorized("User not logged in.");
-            }
-
             var team = _context.Teams.Find(Id);
             if (team == null)
             {
                 return NotFound("Team not found.");
-            }
-
-            if (team.CreatorId != requestingUser.Id)
-            {
-                return Forbid("You can only remove players from teams you created.");
             }
 
             var user = _context.Users.Find(userId);
@@ -150,24 +104,13 @@ namespace backend.Controllers
             return Ok("Player removed from the team successfully.");
         }
 
-        [HttpDelete("{id}")]
-        public IActionResult DeleteTeam([FromHeader] string token, int id)
+        [HttpDelete("Delete/{id}")]
+        public IActionResult DeleteTeam(int id)
         {
-            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null)
-            {
-                return Unauthorized("User not logged in.");
-            }
-
             var team = _context.Teams.Find(id);
             if (team == null)
             {
                 return NotFound("Team not found.");
-            }
-
-            if (team.CreatorId != requestingUser.Id)
-            {
-                return Forbid("You can only delete teams you created.");
             }
 
             _context.Teams.Remove(team);
@@ -175,20 +118,9 @@ namespace backend.Controllers
             return NoContent();
         }
 
-        [HttpDelete("admin/{id}")]
-        public IActionResult AdminDeleteTeam([FromHeader] string token, int id)
+        [HttpDelete("admin/delete/{id}")]
+        public IActionResult AdminDeleteTeam(int id)
         {
-            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null)
-            {
-                return Unauthorized("User not logged in.");
-            }
-
-            if (requestingUser.IsAdmin != true)
-            {
-                return Forbid("Only admins can delete teams.");
-            }
-
             var team = _context.Teams.Find(id);
             if (team == null)
             {

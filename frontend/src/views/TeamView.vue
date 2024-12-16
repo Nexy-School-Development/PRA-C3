@@ -87,12 +87,10 @@ export default {
       }
     },
     async createTeam() {
-      const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
       try {
-        const response = await axios.post('http://localhost:5116/api/Team', this.newTeam, {
+        const response = await axios.post('http://localhost:5116/api/Team/createteam', this.newTeam, {
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Content-Type': 'application/json'
           }
         });
         this.successMessage = 'Team created successfully!';
@@ -107,18 +105,8 @@ export default {
       }
     },
     async deleteTeam(id) {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        this.errorMessage = 'No token found. Please log in as an admin.';
-        return;
-      }
-
       try {
-        const response = await axios.delete(`http://localhost:5116/api/Team/admin/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}` 
-          }
-        });
+        const response = await axios.delete(`http://localhost:5116/api/Team/Delete/${id}`);
         this.successMessage = `Team with ID ${id} deleted successfully.`;
         this.errorMessage = '';
         this.fetchTeams(); 
@@ -128,7 +116,6 @@ export default {
         this.successMessage = '';
       }
     }
-
   },
   created() {
     this.fetchTeams();
@@ -144,7 +131,6 @@ export default {
   margin-bottom: 10px;
   border-radius: 5px;
 }
-
 .btn-primary {
   background-color: #007bff;
   color: white;
@@ -153,7 +139,6 @@ export default {
   border-radius: 5px;
   cursor: pointer;
 }
-
 .btn-danger {
   background-color: #dc3545;
   color: white;
@@ -162,28 +147,23 @@ export default {
   border-radius: 5px;
   cursor: pointer;
 }
-
 .table-auto {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 1.5rem;
 }
-
 th,
 td {
   padding: 10px;
   text-align: left;
 }
-
 thead th {
   background-color: #2563eb;
   color: white;
 }
-
 tbody tr {
   border-top: 1px solid #4b5563;
 }
-
 tbody td {
   background-color: #1f2937;
   color: white;

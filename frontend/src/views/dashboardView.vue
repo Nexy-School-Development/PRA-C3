@@ -19,6 +19,7 @@
                 <th class="p-3">Email</th>
                 <th class="p-3">Admin</th>
                 <th class="p-3">Balance</th>
+                <th class="p-3">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -28,6 +29,10 @@
                 <td class="p-3">{{ user.Email }}</td>
                 <td class="p-3">{{ formatAdmin(user.IsAdmin) }}</td>
                 <td class="p-3">{{ formatBalance(user.Balance) }}</td>
+                <td class="p-3">
+                  <button @click="editUser(user.Id)" class="btn-primary mr-2">Edit</button>
+                  <button @click="deleteUser(user.Id)" class="btn-danger">Delete</button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -39,6 +44,7 @@
 
 <script>
 import axios from 'axios';
+import { mapActions } from 'vuex';
 
 export default {
   data() {
@@ -47,6 +53,7 @@ export default {
     };
   },
   methods: {
+    ...mapActions(['logout', 'checkUser']),
     async fetchDashboardData() {
       try {
         // Fetch user data from API
@@ -60,6 +67,17 @@ export default {
         console.error('Error fetching user data:', error);
         this.users = []; // Reset users in case of error
       }
+    },
+    async deleteUser(id) {
+      try {
+        await axios.delete(`http://localhost:5116/api/User/${id}`);
+        this.fetchDashboardData(); // Refresh the user list after deletion
+      } catch (error) {
+        console.error('Error deleting user:', error.response || error.message);
+      }
+    },
+    editUser(id) {
+      this.$router.push({ name: 'UserEdit', params: { id } });
     },
     formatBalance(balance) {
       // Format balance to 2 decimal places or return '0.00' if null
@@ -80,6 +98,29 @@ export default {
 </script>
 
 <style>
+.input-field {
+  width: 100%;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
 .table-auto {
   width: 100%;
   border-collapse: collapse;
