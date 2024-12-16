@@ -178,7 +178,7 @@ namespace backend.Controllers
         [HttpDelete("admin/{id}")]
         public IActionResult AdminDeleteTeam([FromHeader] string token, int id)
         {
-            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
+            // var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
             if (requestingUser == null || (!requestingUser.IsAdmin ?? false))
             {
                 return Forbid("Only admins can delete any team.");

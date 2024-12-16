@@ -1,26 +1,20 @@
 <template>
   <div class="min-h-screen bg-gray-100">
-    <header class="bg-green-600 text-white p-5 shadow-lg">
+    <header class="bg-blue-500 text-white p-5 shadow-lg">
       <h1 class="text-3xl font-bold text-center">Team Management</h1>
     </header>
 
     <main class="container mx-auto p-5">
-      <section v-if="user" class="mb-10">
-        <h2 class="text-xl font-bold mb-4">Create a Team</h2>
-        <div class="bg-white shadow-md p-6 rounded-lg">
-          <input v-model="newTeam.name" type="text" placeholder="Team Name" class="input-field" />
-          <button @click="createTeam" class="btn-primary">Create Team</button>
-          <p v-if="errorMessage" class="text-red-500">{{ errorMessage }}</p>
-          <p v-if="successMessage" class="text-green-500">{{ successMessage }}</p>
+      <section>
+        <h2 class="text-xl font-bold mb-4">Teams</h2>
+        <div v-if="teams.length === 0" class="bg-white shadow-md p-6 rounded-lg text-center">
+          <p>Not found</p>
         </div>
-      </section>
-
-      <section v-if="user">
-        <h2 class="text-xl font-bold mb-4">Team List</h2>
-        <div class="bg-white shadow-md p-6 rounded-lg">
-          <table class="table-auto w-full text-left">
+        <div v-else>
+          <!-- Single table for all teams -->
+          <table class="table-auto w-full text-left bg-gray-900 text-white rounded-lg overflow-hidden">
             <thead>
-              <tr class="bg-green-600 text-white">
+              <tr class="bg-blue-600">
                 <th class="p-3">ID</th>
                 <th class="p-3">Name</th>
                 <th class="p-3">Points</th>
@@ -29,13 +23,14 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="team in teams" :key="team.id" class="border-t">
-                <td class="p-3">{{ team.id }}</td>
-                <td class="p-3">{{ team.name }}</td>
-                <td class="p-3">{{ team.points }}</td>
-                <td class="p-3">{{ team.creatorId }}</td>
+              <!-- Iterate over teams and create a row for each -->
+              <tr v-for="team in teams" :key="team.Id" class="border-t border-gray-700">
+                <td class="p-3">{{ team.Id }}</td>
+                <td class="p-3">{{ team.Name }}</td>
+                <td class="p-3">{{ team.Points }}</td>
+                <td class="p-3">{{ team.CreatorId }}</td>
                 <td class="p-3">
-                  <button @click="deleteTeam(team.id)" class="btn-danger">Delete</button>
+                  <button @click="deleteTeam(team.Id)" class="btn-danger">Delete</button>
                 </td>
               </tr>
             </tbody>
@@ -43,132 +38,95 @@
         </div>
       </section>
 
-      <section v-else>
-        <p>You are not logged in.</p>
-        <router-link to="/login" class="btn-primary mr-3">Login</router-link>
-        <router-link to="/register" class="btn-secondary">Register</router-link>
+      <section class="bg-white shadow-md p-6 rounded-lg max-w-md mx-auto mt-10">
+        <h2 class="text-xl font-bold mb-4">Create New Team</h2>
+        <form @submit.prevent="createTeam">
+          <input v-model="newTeam.name" type="text" placeholder="Team Name" class="input-field" required />
+          <input v-model="newTeam.points" type="number" placeholder="Points" class="input-field" required />
+          <input v-model="newTeam.creatorId" type="number" placeholder="Creator ID" class="input-field" required />
+          <button type="submit" class="btn-primary">Create Team</button>
+        </form>
+        <p v-if="errorMessage" class="text-red-500 mt-3">{{ errorMessage }}</p>
+        <p v-if="successMessage" class="text-green-500 mt-3">{{ successMessage }}</p>
       </section>
     </main>
   </div>
 </template>
 
 <script>
-import apiClient from "@/axios";
+import axios from 'axios';
 
 export default {
   data() {
     return {
-      user: null,
-      teams: [],
+      teams: [], // Will hold team data fetched from API
       newTeam: {
-        name: "",
+        name: '',
         points: 0,
-        creatorId: null,
-        homeMatches: [],
-        awayMatches: []
+        creatorId: 0
       },
-      errorMessage: "",
-      successMessage: "",
+      errorMessage: '',
+      successMessage: ''
     };
   },
-  computed: {
-    token() {
-      return this.user?.token || "";
-    }
-  },
   methods: {
-    checkUser() {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        this.user = JSON.parse(storedUser);
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${this.user.token}`;
-      }
-    },
     async fetchTeams() {
-      if (!this.token) {
-        this.errorMessage = "User is not authenticated. Please log in.";
-        return;
-      }
-
       try {
-        console.log("Fetching teams with token:", this.token); // Debugging log
-        const response = await apiClient.get("/Team", {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-          },
-        });
-        this.teams = response.data;
+        // Fetch team data from API
+        const response = await axios.get('http://localhost/pra-c3/frontend/database/getTeams.php');
+        console.log('API response:', response.data); // Log the response data
+        if (response.data && Array.isArray(response.data)) {
+          this.teams = response.data; // Bind fetched data to 'teams'
+          console.log('Teams data:', this.teams); // Log the teams data
+        } else {
+          console.error('Invalid API response format:', response.data);
+        }
       } catch (error) {
-        console.error("Error fetching teams", error);
+        console.error('Error fetching team data:', error);
+        this.teams = []; // Reset teams in case of error
       }
     },
     async createTeam() {
-      if (!this.newTeam.name.trim()) {
-        this.errorMessage = "Team name is required.";
-        return;
-      }
-
-      if (!this.token) {
-        this.errorMessage = "User is not authenticated. Please log in.";
-        return;
-      }
-
-      console.log("Creating team with token:", this.token); // Debugging log
-
+      const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
       try {
-        const response = await apiClient.post("/Team", {
-          name: this.newTeam.name,
-          points: this.newTeam.points,
-          creatorId: this.user.id,
-          homeMatches: this.newTeam.homeMatches,
-          awayMatches: this.newTeam.awayMatches,
-          token: this.token // Include the token in the request body
-        }, {
+        const response = await axios.post('http://localhost:5116/api/Team', this.newTeam, {
           headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-          },
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
         });
-        console.log("Team creation response:", response); // Debugging log
-        this.newTeam.name = "";
+        this.successMessage = 'Team created successfully!';
+        this.errorMessage = '';
+        this.newTeam.name = '';
         this.newTeam.points = 0;
-        this.newTeam.homeMatches = [];
-        this.newTeam.awayMatches = [];
-        this.successMessage = "Team created successfully!";
-        this.errorMessage = "";
-        this.fetchTeams();
+        this.newTeam.creatorId = 0;
+        this.fetchTeams(); // Refresh the team list
       } catch (error) {
-        console.error("Error creating team:", error.response?.data || error.message);
-        this.errorMessage = error.response?.data?.message || "Failed to create team.";
-        this.successMessage = "";
+        this.errorMessage = error.response?.data?.message || 'Failed to create team.';
+        this.successMessage = '';
       }
     },
-    async deleteTeam(teamId) {
-      if (!this.token) {
-        this.errorMessage = "User is not authenticated. Please log in.";
-        return;
-      }
-
+    async deleteTeam(id) {
+      const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
       try {
-        console.log("Deleting team with token:", this.token); // Debugging log
-        await apiClient.delete(`/Team/${teamId}`, {
+        await axios.delete(`http://localhost:5116/api/Team/admin/${id}`, {
           headers: {
-            Authorization: `Bearer ${this.token}`,
-          },
+            'Authorization': `Bearer ${token}`
+          }
         });
-        this.fetchTeams();
+        this.successMessage = 'Team deleted successfully!';
+        this.errorMessage = '';
+        this.fetchTeams(); // Refresh the team list
       } catch (error) {
-        console.error("Error deleting team", error);
+        this.errorMessage = error.response?.data?.message || 'Failed to delete team.';
+        this.successMessage = '';
       }
-    },
-  },
-  created() {
-    this.checkUser();
-    if (this.user) {
-      this.fetchTeams();
     }
   },
+  created() {
+    // Fetch data when component is created
+    this.fetchTeams();
+  }
 };
 </script>
 
@@ -181,19 +139,7 @@ export default {
   border-radius: 5px;
 }
 .btn-primary {
-  background-color: #28a745;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-.btn-primary:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-.btn-secondary {
-  background-color: #6c757d;
+  background-color: #007bff;
   color: white;
   padding: 10px 15px;
   border: none;
@@ -208,17 +154,25 @@ export default {
   border-radius: 5px;
   cursor: pointer;
 }
-table {
+.table-auto {
   width: 100%;
   border-collapse: collapse;
+  margin-bottom: 1.5rem;
 }
 th,
 td {
   padding: 10px;
-  border: 1px solid #ddd;
+  text-align: left;
 }
-th {
-  background-color: #28a745;
+thead th {
+  background-color: #2563eb;
+  color: white;
+}
+tbody tr {
+  border-top: 1px solid #4b5563;
+}
+tbody td {
+  background-color: #1f2937;
   color: white;
 }
 </style>

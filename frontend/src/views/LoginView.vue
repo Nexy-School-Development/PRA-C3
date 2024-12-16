@@ -32,7 +32,7 @@ export default {
   methods: {
     async login() {
       try {
-        const response = await apiClient.post("/api/User/login", null, {
+        const response = await apiClient.post("/User/login", null, {
           params: {
             email: this.email,
             password: this.password,

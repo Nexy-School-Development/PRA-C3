@@ -22,9 +22,13 @@ if ($result->num_rows > 0) {
         $teams[] = $row;
     }
 } else {
-    echo json_encode([]);
+    echo json_encode(["message" => "No teams found"]);
     exit();
 }
+
+// Debugging output
+error_log("Teams fetched: " . print_r($teams, true));
+
 echo json_encode($teams);
 
 $conn->close();
