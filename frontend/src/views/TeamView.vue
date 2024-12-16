@@ -107,24 +107,30 @@ export default {
       }
     },
     async deleteTeam(id) {
-      const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage
+      const token = localStorage.getItem('token');
+      if (!token) {
+        this.errorMessage = 'No token found. Please log in as an admin.';
+        return;
+      }
+
       try {
-        await axios.delete(`http://localhost:5116/api/Team/admin/${id}`, {
+        const response = await axios.delete(`http://localhost:5116/api/Team/admin/${id}`, {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}` 
           }
         });
-        this.successMessage = 'Team deleted successfully!';
+        this.successMessage = `Team with ID ${id} deleted successfully.`;
         this.errorMessage = '';
-        this.fetchTeams(); // Refresh the team list
+        this.fetchTeams(); 
       } catch (error) {
-        this.errorMessage = error.response?.data?.message || 'Failed to delete team.';
+        console.error('Error deleting team:', error.response || error.message);
+        this.errorMessage = error.response?.data || 'Failed to delete team. Make sure you have admin permissions.';
         this.successMessage = '';
       }
     }
+
   },
   created() {
-    // Fetch data when component is created
     this.fetchTeams();
   }
 };
@@ -138,6 +144,7 @@ export default {
   margin-bottom: 10px;
   border-radius: 5px;
 }
+
 .btn-primary {
   background-color: #007bff;
   color: white;
@@ -146,6 +153,7 @@ export default {
   border-radius: 5px;
   cursor: pointer;
 }
+
 .btn-danger {
   background-color: #dc3545;
   color: white;
@@ -154,23 +162,28 @@ export default {
   border-radius: 5px;
   cursor: pointer;
 }
+
 .table-auto {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 1.5rem;
 }
+
 th,
 td {
   padding: 10px;
   text-align: left;
 }
+
 thead th {
   background-color: #2563eb;
   color: white;
 }
+
 tbody tr {
   border-top: 1px solid #4b5563;
 }
+
 tbody td {
   background-color: #1f2937;
   color: white;

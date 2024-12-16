@@ -178,10 +178,15 @@ namespace backend.Controllers
         [HttpDelete("admin/{id}")]
         public IActionResult AdminDeleteTeam([FromHeader] string token, int id)
         {
-            // var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null || (!requestingUser.IsAdmin ?? false))
+            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
+            if (requestingUser == null)
             {
-                return Forbid("Only admins can delete any team.");
+                return Unauthorized("User not logged in.");
+            }
+
+            if (requestingUser.IsAdmin != true)
+            {
+                return Forbid("Only admins can delete teams.");
             }
 
             var team = _context.Teams.Find(id);
@@ -192,7 +197,7 @@ namespace backend.Controllers
 
             _context.Teams.Remove(team);
             _context.SaveChanges();
-            return NoContent();
+            return Ok($"Team with ID {id} has been deleted successfully.");
         }
     }
 }
