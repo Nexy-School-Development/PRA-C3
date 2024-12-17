@@ -19,7 +19,16 @@ namespace backend.Controllers
         [HttpGet]
         public IActionResult GetAllMatches()
         {
-            var matches = _context.Matches.ToList();
+            var matches = _context.Matches
+                .Select(m => new
+                {
+                    m.Id,
+                    HomeTeamName = m.HomeTeam.Name,
+                    AwayTeamName = m.AwayTeam.Name,
+                    m.Starttime,
+                    m.IsFinished
+                })
+                .ToList();
             return Ok(matches);
         }
         [HttpPost("create")]

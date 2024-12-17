@@ -43,18 +43,29 @@ namespace backend.Controllers
         }
 
         [HttpPut("update/{id}")]
-        public IActionResult UpdateTeam(int id, [FromBody] Team updatedTeam)
+        public IActionResult UpdateMatch(int id, [FromBody] Match updatedMatch)
         {
-            var existingTeam = _context.Teams.Find(id);
-            if (existingTeam == null)
+            var match = _context.Matches.Find(id);
+            if (match == null)
             {
-                return NotFound("Team not found.");
+                return NotFound("Match not found");
             }
 
-            existingTeam.Name = updatedTeam.Name;
-            _context.SaveChanges();
+            // Find HomeTeam and AwayTeam by their ids from the database
+            var homeTeam = _context.Teams.Find(updatedMatch.HomeTeamId);
+            var awayTeam = _context.Teams.Find(updatedMatch.AwayTeamId);
 
-            return Ok(existingTeam);
+            if (homeTeam == null || awayTeam == null)
+            {
+                return BadRequest("One or both teams do not exist.");
+            }
+
+            match.HomeTeam = homeTeam;
+            match.AwayTeam = awayTeam;
+            match.Starttime = updatedMatch.Starttime;
+
+            _context.SaveChanges();
+            return Ok(match);
         }
 
         [HttpPost("{Id}/add-player/{userId}")]

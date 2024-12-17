@@ -7,6 +7,7 @@ import TeamView from '../views/TeamView.vue';
 import TournooienView from '../views/TournooienView.vue';
 import MatchView from '../views/MatchView.vue';
 
+
 const routes = [
   { path: '/', component: HomeView },
   { path: '/login', component: LoginView },
