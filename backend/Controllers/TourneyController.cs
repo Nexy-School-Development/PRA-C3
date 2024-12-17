@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using backend.Models;
+using backend.Models; // Include your Models namespace
 using System.Linq;
+using System.Collections.Generic;
+using System;
 
 namespace backend.Controllers
 {
@@ -16,25 +18,26 @@ namespace backend.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Generates a schedule for the tournament.
+        /// </summary>
+        /// <param name="fieldsAvailable">Number of fields available for scheduling matches</param>
         [HttpPost("generate-schedule")]
-        public IActionResult GenerateSchedule([FromHeader] string token, [FromBody] int fieldsAvailable)
+        public IActionResult GenerateSchedule([FromBody] int fieldsAvailable)
         {
-            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null || (!requestingUser.IsAdmin ?? false))
-            {
-                return Forbid("Only admins can generate schedules.");
-            }
-
+            // Fetch all teams
             var teams = _context.Teams.ToList();
             if (teams.Count < 2)
             {
                 return BadRequest("Not enough teams to generate a schedule.");
             }
 
+            // Initialize match list and scheduling variables
             var matches = new List<Match>();
-            int fieldCounter = 1;
+            int fieldCounter = 1; // Track which field a match is assigned to
             DateTime startTime = DateTime.Now;
 
+            // Generate round-robin matches
             for (int i = 0; i < teams.Count; i++)
             {
                 for (int j = i + 1; j < teams.Count; j++)
@@ -49,6 +52,7 @@ namespace backend.Controllers
                         IsFinished = false
                     });
 
+                    // Rotate through fields and adjust match time
                     fieldCounter++;
                     if (fieldCounter > fieldsAvailable)
                     {
@@ -58,6 +62,7 @@ namespace backend.Controllers
                 }
             }
 
+            // Create a new tournament with the generated matches
             var tourney = new Tourney
             {
                 Name = "Generated Tournament",
@@ -67,28 +72,26 @@ namespace backend.Controllers
             _context.Tourneys.Add(tourney);
             _context.SaveChanges();
 
-            return Ok(tourney);
+            return Ok(new { Message = "Tournament schedule generated successfully.", Tourney = tourney });
         }
 
+        /// <summary>
+        /// View the tournament schedule.
+        /// </summary>
         [HttpGet("schedule")]
-        public IActionResult ViewSchedule([FromHeader] string token)
+        public IActionResult ViewSchedule()
         {
-            var requestingUser = _context.Users.SingleOrDefault(u => u.Token == token);
-            if (requestingUser == null)
-            {
-                return Unauthorized("User not logged in.");
-            }
-
+            // Retrieve tournament with match details
             var tourney = _context.Tourneys
                 .Select(t => new
                 {
-                    t.Name,
+                    TournamentName = t.Name,
                     Matches = t.Matches.Select(m => new
                     {
                         HomeTeam = m.HomeTeam.Name,
                         AwayTeam = m.AwayTeam.Name,
                         StartTime = m.Starttime,
-                        IsFinished = m.IsFinished
+                        IsFinished = m.IsFinished ? "Finished" : "Upcoming"
                     })
                 })
                 .FirstOrDefault();
