@@ -16,25 +16,52 @@ namespace backend.Controllers
             _context = context;
         }
 
-        [Authorize]
         [HttpGet]
         public IActionResult GetAllMatches()
         {
             var matches = _context.Matches.ToList();
             return Ok(matches);
         }
-
-        [Authorize]
-        [HttpPost]
+        [HttpPost("create")]
         public IActionResult CreateMatch([FromBody] Match match)
         {
-            _context.Matches.Add(match);
-            _context.SaveChanges();
-            return Created($"api/match/{match.Id}", match);
+            if (match == null)
+            {
+                return BadRequest("Match data is null");
+            }
+
+            // Fetch HomeTeam and AwayTeam by their IDs from the database
+            var homeTeam = _context.Teams.Find(match.HomeTeamId);
+            var awayTeam = _context.Teams.Find(match.AwayTeamId);
+
+            // Check if the teams exist
+            if (homeTeam == null || awayTeam == null)
+            {
+                return BadRequest("One or both teams do not exist.");
+            }
+
+            // Assign the teams to the match object
+            match.HomeTeam = homeTeam;
+            match.AwayTeam = awayTeam;
+
+            try
+            {
+                // Add the match to the database
+                _context.Matches.Add(match);
+                _context.SaveChanges();
+
+                // Return the created match with its ID
+                return CreatedAtAction(nameof(CreateMatch), new { id = match.Id }, match);
+            }
+            catch (Exception ex)
+            {
+                // If an error occurs, return a 500 status code with an error message
+                return StatusCode(500, "Internal server error while saving match");
+            }
         }
 
-        [Authorize]
-        [HttpPut("{id}")]
+
+        [HttpPut("update/{id}")]
         public IActionResult UpdateMatch(int id, [FromBody] Match updatedMatch)
         {
             var match = _context.Matches.Find(id);
@@ -53,8 +80,7 @@ namespace backend.Controllers
             return Ok(match);
         }
 
-        [Authorize]
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")]
         public IActionResult DeleteMatch(int id)
         {
             var match = _context.Matches.Find(id);
@@ -68,8 +94,7 @@ namespace backend.Controllers
             return NoContent();
         }
 
-        [Authorize]
-        [HttpPut("{id}/result")]
+        [HttpPut("match/{id}/result")]
         public IActionResult UpdateMatchResult(int id, [FromBody] MatchResultDto result, [FromHeader] string token)
         {
             var user = _context.Users.SingleOrDefault(u => u.Token == token);

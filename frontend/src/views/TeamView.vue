@@ -98,7 +98,7 @@ export default {
         this.newTeam.name = '';
         this.newTeam.points = 0;
         this.newTeam.creatorId = 0;
-        this.fetchTeams(); // Refresh the team list
+        this.fetchTeams();
       } catch (error) {
         this.errorMessage = error.response?.data?.message || 'Failed to create team.';
         this.successMessage = '';

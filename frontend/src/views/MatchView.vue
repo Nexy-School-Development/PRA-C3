@@ -12,6 +12,8 @@
           <input v-model="newMatch.awayTeamId" type="number" placeholder="Away Team ID" class="input-field" />
           <input v-model="newMatch.starttime" type="datetime-local" class="input-field" />
           <button @click="createMatch" class="btn-primary">Create Match</button>
+          <p v-if="successMessage" class="text-green-600">{{ successMessage }}</p>
+          <p v-if="errorMessage" class="text-red-600">{{ errorMessage }}</p>
         </div>
       </section>
 
@@ -68,22 +70,49 @@ export default {
         awayTeamId: null,
         starttime: "",
       },
+      successMessage: '',
+      errorMessage: ''
     };
   },
   methods: {
     async fetchMatches() {
       try {
         const response = await axios.get('http://localhost/pra-c3/frontend/database/getMatches.php');
-        this.matches = response.data;
+        this.matches = response.data.map(match => {
+          const currentTime = new Date();
+          const matchStartTime = new Date(match.Starttime);
+          match.IsFinished = currentTime > matchStartTime;
+          return match;
+        });
       } catch (error) {
         console.error("Error fetching matches", error);
       }
     },
     async createMatch() {
       try {
-        await axios.post('http://localhost:5116/api/Match', this.newMatch);
+        const currentTime = new Date();
+        const matchStartTime = new Date(this.newMatch.starttime);
+        const isFinished = currentTime > matchStartTime;
+
+        const response = await axios.post('http://localhost:5116/api/Match/create', {
+          HomeTeamId: this.newMatch.homeTeamId,
+          AwayTeamId: this.newMatch.awayTeamId,
+          Starttime: this.newMatch.starttime,
+          IsFinished: isFinished
+        }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        this.successMessage = 'Match created successfully!';
+        this.errorMessage = '';
+        this.newMatch.homeTeamId = null;
+        this.newMatch.awayTeamId = null;
+        this.newMatch.starttime = "";
         this.fetchMatches();
       } catch (error) {
+        this.errorMessage = error.response?.data?.message || 'Failed to create match.';
+        this.successMessage = '';
         console.error("Error creating match", error);
       }
     },
