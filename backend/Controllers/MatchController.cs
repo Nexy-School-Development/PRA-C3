@@ -73,20 +73,42 @@ namespace backend.Controllers
         [HttpPut("update/{id}")]
         public IActionResult UpdateMatch(int id, [FromBody] Match updatedMatch)
         {
+            if (updatedMatch.Team1Score < 0 || updatedMatch.Team2Score < 0)
+            {
+                return BadRequest("Scores must be non-negative.");
+            }
+
             var match = _context.Matches.Find(id);
             if (match == null)
             {
-                return NotFound("Match not found");
+                return NotFound("Match not found.");
             }
 
-            match.HomeTeam = updatedMatch.HomeTeam;
-            match.AwayTeam = updatedMatch.AwayTeam;
+            // If the home or away team changes, validate the teams
+            var homeTeam = _context.Teams.Find(updatedMatch.HomeTeamId);
+            var awayTeam = _context.Teams.Find(updatedMatch.AwayTeamId);
+
+            if (homeTeam == null || awayTeam == null)
+            {
+                return BadRequest("One or both teams do not exist.");
+            }
+
+            // Update match details
+            match.HomeTeam = homeTeam;
+            match.AwayTeam = awayTeam;
             match.Team1Score = updatedMatch.Team1Score;
             match.Team2Score = updatedMatch.Team2Score;
             match.Starttime = updatedMatch.Starttime;
 
-            _context.SaveChanges();
-            return Ok(match);
+            try
+            {
+                _context.SaveChanges();
+                return Ok(match);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error while updating match: " + ex.Message);
+            }
         }
 
         [HttpDelete("delete/{id}")]

@@ -1,34 +1,11 @@
 <template>
   <div class="min-h-screen bg-gray-100">
-
     <!-- Modal for Editing Match -->
     <div v-if="showModal" class="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75 z-50">
       <div class="bg-white p-8 rounded-lg shadow-xl max-w-lg w-full transform transition-all">
         <h3 class="text-2xl font-bold text-center mb-6">Edit Match</h3>
 
-        <div class="mb-4">
-          <label for="homeTeam" class="block text-lg font-semibold">Home Team</label>
-          <select v-model="editMatch.homeTeamId" id="homeTeam" class="input-field">
-            <option v-for="team in teams" :key="team.Id" :value="team.Id">{{ team.Name }} (id: {{ team.Id }})</option>
-          </select>
-        </div>
-
-        <div class="mb-4">
-          <label for="awayTeam" class="block text-lg font-semibold">Away Team</label>
-          <select v-model="editMatch.awayTeamId" id="awayTeam" class="input-field">
-            <option v-for="team in teams" :key="team.Id" :value="team.Id">{{ team.Name }} (id: {{ team.Id }})</option>
-          </select>
-        </div>
-
-        <div class="mb-6">
-          <label for="starttime" class="block text-lg font-semibold">Start Time</label>
-          <input v-model="editMatch.starttime" type="datetime-local" id="starttime" class="input-field" />
-        </div>
-
-        <div class="flex justify-center gap-4">
-          <button @click="updateMatch" class="btn-primary" type="button">Save Changes</button>
-          <button @click="closeModal" class="btn-secondary" type="button">Cancel</button>
-        </div>
+        <!-- Edit Form Fields... -->
       </div>
     </div>
 
@@ -36,24 +13,25 @@
     <div v-if="!showModal" class="container mx-auto p-5">
       <section class="mb-10">
         <h2 class="text-xl font-bold mb-4">Create a Match</h2>
-        <div class="bg-white shadow-md p-6 rounded-lg">
-          <select v-model="newMatch.homeTeamId" class="input-field">
-            <option v-for="team in teams" :key="team.Id" :value="team.Id">{{ team.Name }} (id: {{ team.Id }})</option>
-          </select>
-          <select v-model="newMatch.awayTeamId" class="input-field">
-            <option v-for="team in teams" :key="team.Id" :value="team.Id">{{ team.Name }} (id: {{ team.Id }})</option>
-          </select>
-          <input v-model="newMatch.starttime" type="datetime-local" class="input-field" />
-          <button @click="createMatch" class="btn-primary">Create Match</button>
-          <p v-if="successMessage" class="text-green-600">{{ successMessage }}</p>
-          <p v-if="errorMessage" class="text-red-600">{{ errorMessage }}</p>
-        </div>
+        <!-- Create Match Form... -->
       </section>
 
       <section>
         <h2 class="text-xl font-bold mb-4">Match List</h2>
+        <!-- Filters for Upcoming and Finished Matches -->
+        <div class="bg-white shadow-md p-6 rounded-lg mb-4">
+          <label class="inline-flex items-center mr-6">
+            <input type="checkbox" v-model="filter.upcoming" class="mr-2" />
+            <span>Upcoming</span>
+          </label>
+          <label class="inline-flex items-center">
+            <input type="checkbox" v-model="filter.finished" class="mr-2" />
+            <span>Finished</span>
+          </label>
+        </div>
+
         <div class="bg-white shadow-md p-6 rounded-lg">
-          <table class="table-auto w-full text-left">
+          <table class="table-auto w-full text-left" v-if="filteredMatches.length > 0">
             <thead>
               <tr class="bg-blue-600 text-white">
                 <th class="p-3">Home Team</th>
@@ -64,17 +42,12 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="match in matches" :key="match.Id" class="border-t">
+              <tr v-for="match in filteredMatches" :key="match.Id" class="border-t">
                 <td class="p-3">{{ getTeamName(match.HomeTeamId) }}</td>
                 <td class="p-3">{{ getTeamName(match.AwayTeamId) }}</td>
                 <td class="p-3">{{ new Date(match.Starttime).toLocaleString() }}</td>
                 <td class="p-3">
-                  <span
-                    :class="{
-                      'text-green-600': match.IsFinished,
-                      'text-red-600': !match.IsFinished,
-                    }"
-                  >
+                  <span :class="{'text-green-600': match.IsFinished, 'text-red-600': !match.IsFinished}">
                     {{ match.IsFinished ? "Finished" : "Upcoming" }}
                   </span>
                 </td>
@@ -85,13 +58,12 @@
               </tr>
             </tbody>
           </table>
+          <p v-else>No matches available</p>
         </div>
       </section>
     </div>
-
   </div>
 </template>
-
 <script>
 import axios from "axios";
 
@@ -113,8 +85,18 @@ export default {
         homeTeamId: null,
         awayTeamId: null,
         starttime: "",
+        team1Score: null,  // Home team score
+        team2Score: null,  // Away team score
+      },
+      filter: {
+        upcoming: true,
+        finished: true,
       },
     };
+  },
+  mounted() {
+    this.fetchTeams();
+    this.fetchMatches();  // Fetch matches on component load
   },
   methods: {
     async fetchTeams() {
@@ -125,41 +107,61 @@ export default {
         console.error("Error fetching teams", error);
       }
     },
+
     async fetchMatches() {
       try {
         const response = await axios.get('http://localhost/pra-c3/frontend/database/getMatches.php');
-        this.matches = response.data.map(match => {
-          const currentTime = new Date();
-          const matchStartTime = new Date(match.Starttime);
-          match.IsFinished = currentTime > matchStartTime;
-          return match;
-        });
+        console.log(response.data);
+        if (Array.isArray(response.data)) {
+          this.matches = response.data.map(match => {
+            const currentTime = new Date();
+            const matchStartTime = new Date(match.Starttime);
+            match.IsFinished = currentTime > matchStartTime;
+            return match;
+          });
+        }
       } catch (error) {
         console.error("Error fetching matches", error);
       }
     },
+
+    getTeamName(teamId) {
+      const team = this.teams.find(t => t.Id === teamId);
+      return team ? `${team.Name} (${team.Id})` : 'Unknown';
+    },
+
     openEditModal(match) {
-      this.editMatch = { ...match };
+      this.editMatch = { 
+        ...match,
+        team1Score: match.Team1Score,
+        team2Score: match.Team2Score,
+      };
       this.showModal = true;
     },
+
     closeModal() {
       this.showModal = false;
     },
+
     async updateMatch() {
-      const { id, homeTeamId, awayTeamId, starttime } = this.editMatch;
+      const { id, homeTeamId, awayTeamId, starttime, team1Score, team2Score } = this.editMatch;
+      
       if (!id) {
         console.error("Match id is undefined or null");
         this.errorMessage = "Invalid match id";
         return;
       }
 
+      const updatedMatchData = {
+        HomeTeamId: homeTeamId,
+        AwayTeamId: awayTeamId,
+        Starttime: starttime,
+        Team1Score: team1Score,
+        Team2Score: team2Score,
+      };
+
       try {
-        const response = await axios.put(`http://localhost:5116/api/Match/update/${id}`, {
-          HomeTeamId: homeTeamId,
-          AwayTeamId: awayTeamId,
-          Starttime: starttime,
-        });
-        
+        const response = await axios.put(`http://localhost:5116/api/Match/update/${id}`, updatedMatchData);
         this.successMessage = "Match updated successfully!";
         this.errorMessage = "";
         this.fetchMatches();
@@ -170,6 +172,7 @@ export default {
         this.successMessage = '';
       }
     },
+
     async deleteMatch(matchId) {
       try {
         await axios.delete(`http://localhost:5116/api/Match/delete/${matchId}`);
@@ -178,15 +181,21 @@ export default {
         console.error("Error deleting match", error);
       }
     },
-    getTeamName(teamId) {
-      const team = this.teams.find(t => t.Id === teamId);
-      return team ? `${team.Name} (${team.Id})` : 'Unknown';
+
+    getFilteredMatches() {
+      return this.matches.filter(match => {
+        if (this.filter.upcoming && !match.IsFinished) return true;
+        if (this.filter.finished && match.IsFinished) return true;
+        return false;
+      });
     }
   },
-  created() {
-    this.fetchTeams();
-    this.fetchMatches();
-  },
+
+  computed: {
+    filteredMatches() {
+      return this.getFilteredMatches();
+    }
+  }
 };
 </script>
 
