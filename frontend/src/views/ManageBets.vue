@@ -5,6 +5,7 @@
     </header>
 
     <main class="container mx-auto p-5">
+      <!-- Finished Matches Section -->
       <section v-if="finishedMatches.length">
         <h2 class="text-2xl font-bold mb-3">Finished Matches</h2>
 
@@ -16,6 +17,7 @@
             What team won?
           </button>
 
+          <!-- Winner selection popup -->
           <div v-if="match.showPopup" class="popup-overlay">
             <div class="popup">
               <h3>Select the winning team</h3>
@@ -43,39 +45,37 @@ export default {
   data() {
     return {
       finishedMatches: [],
-      teams: [],  // To store teams
+      teams: [],  // To store teams with full details
       errorMessage: "",
     };
   },
   methods: {
-    // Fetch the finished matches from the backend (using getMatches.php)
-    async fetchFinishedMatches() {
+    async fetchMatches() {
       try {
-        // Fetch finished matches
-        const matchesResponse = await axios.get("http://localhost/pra-c3/frontend/database/getMatches.php", {
-          params: { status: "finished" }  // Send a query parameter to filter finished matches
-        });
-        const matches = matchesResponse.data;
+        // Fetching matches
+        const response = await axios.get("http://localhost/pra-c3/frontend/database/getMatches.php");
+        const matches = response.data;
 
-        // Fetch teams for home and away teams
+        // Fetching teams for match data
         const teamsResponse = await axios.get("http://localhost/pra-c3/frontend/database/getTeams.php");
-        this.teams = teamsResponse.data;  // Store teams in the component
+        this.teams = teamsResponse.data;
 
-        // Map the team names to the finished matches
-        this.finishedMatches = matches.map(match => {
-          const homeTeam = this.teams.find(team => team.TeamId === match.HomeTeamId);
-          const awayTeam = this.teams.find(team => team.TeamId === match.AwayTeamId);
-          
-          return {
-            ...match,
-            HomeTeamName: homeTeam ? homeTeam.Name : 'Unknown',  // Set team name or default to 'Unknown'
-            AwayTeamName: awayTeam ? awayTeam.Name : 'Unknown',  // Set team name or default to 'Unknown'
-            showPopup: false  // Initially hide the popup
-          };
-        });
+        // Filter finished matches and map team names to the match data
+        this.finishedMatches = matches
+          .filter((match) => new Date(match.Starttime) < new Date()) // Ensure the match is finished
+          .map((match) => {
+            const homeTeam = this.teams.find((team) => team.Id === match.HomeTeamId);
+            const awayTeam = this.teams.find((team) => team.Id === match.AwayTeamId);
+            return {
+              ...match,
+              HomeTeamName: homeTeam ? homeTeam.Name : "Unknown",
+              AwayTeamName: awayTeam ? awayTeam.Name : "Unknown",
+              showPopup: false, // Initially, no popup is shown
+            };
+          });
       } catch (error) {
-        console.error("Error fetching finished matches or teams:", error);
-        this.errorMessage = "Error fetching finished matches or teams.";
+        console.error("Error fetching matches or teams:", error);
+        this.errorMessage = "Error fetching matches or teams.";
       }
     },
 
@@ -89,20 +89,16 @@ export default {
       match.showPopup = false;
     },
 
-    // Handle the selection of the winning team
-    async selectWinner(match, winner) {
+      async selectWinner(match, winner) {
       try {
-        // Call the backend to process the bets and update balances
-        const response = await axios.post("http://localhost:5116/api/processBets", {
-          matchId: match.MatchId,
-          winner: winner
+        const response = await axios.post("http://localhost:5116/api/bet/resolve-bets", {
+          matchId: match.MatchId, 
+          winner: winner,
         });
 
-        // Show the result of the processing
         alert(response.data.message);
 
-        // Refresh the list of finished matches after processing
-        this.fetchFinishedMatches();
+        this.fetchMatches();
       } catch (error) {
         console.error("Error selecting winner:", error);
         this.errorMessage = "Error selecting the winner.";
@@ -112,23 +108,32 @@ export default {
       match.showPopup = false;
     },
 
-    // Resolve all bets by calling the backend
+    // Resolve all bets for all matches
     async resolveBets() {
       try {
-        const response = await axios.post("http://localhost:5116/api/resolve-bets");
-        alert(response.data);  // Show success message
+        const matchIds = this.finishedMatches.map(match => match.MatchId); 
+
+        const response = await axios.post("http://localhost:5116/api/bet/resolve-all-bets", {
+          matchIds: matchIds,  
+        });
+
+        alert(response.data); 
       } catch (error) {
         console.error("Error resolving bets:", error);
         alert("There was an error resolving the bets.");
       }
-    }
+    },
   },
   created() {
-    // Fetch the finished matches when the component is created
-    this.fetchFinishedMatches();
-  }
+    this.fetchMatches();
+  },
 };
 </script>
+
+<style scoped>
+/* Same CSS as before */
+</style>
+
 
 <style scoped>
 .match-card {
@@ -169,7 +174,7 @@ button {
 }
 
 .btn-secondary {
-  background-color: #6c757d;
+  background-color: black;
   color: white;
 }
 
