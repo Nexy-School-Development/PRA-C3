@@ -36,13 +36,9 @@ namespace backend.Controllers
         public IActionResult Login(string email, string password)
         {
             var user = _context.Users.SingleOrDefault(u => u.Email == email);
-            if (user != null && user.ValidatePassword(password))
+            if (user == null || !user.ValidatePassword(password))
             {
-                return Ok(user);
-            }
-            Debug.WriteLine($"{email}, {password}");
-            if (user == null)
-            {
+                Debug.WriteLine($"{email}, {password}");
                 return Unauthorized("Invalid email or password");
             }
             return Ok(user);
