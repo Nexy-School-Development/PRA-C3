@@ -154,7 +154,8 @@ export default {
       const bet = {
         Match: { Id: matchId },
         Prediction: selectedTeam,
-        Amount: betAmount
+        Amount: betAmount,
+        UserId: this.user.Id // Include UserId here
       };
 
       console.log("Placing bet:", bet); // Log bet details before sending API request
@@ -261,25 +262,11 @@ button:disabled {
 .btn-danger {
   display: inline-block;
   text-align: center;
-  background-color: #e53e3e;
+  background-color: #dc3545;
   padding: 0.5rem 1rem;
   border-radius: 5px;
   color: white;
   font-weight: bold;
-  text-decoration: none;
-}
-
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.shadow-md {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.rounded-lg {
-  border-radius: 10px;
+  cursor: pointer;
 }
 </style>
