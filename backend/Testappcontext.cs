@@ -28,30 +28,30 @@ public class Testappcontext : DbContext
         }
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Bet>()
-            .HasOne(b => b.Match)
-            .WithMany(m => m.Bets)
-            .HasForeignKey(b => b.MatchId);
+    // protected override void OnModelCreating(ModelBuilder modelBuilder)
+    // {
+    //     modelBuilder.Entity<Bet>()
+    //         .HasOne(b => b.Match)
+    //         .WithMany(m => m.Bets)
+    //         .HasForeignKey(b => b.MatchId);
 
-        modelBuilder.Entity<Bet>()
-            .HasOne(b => b.User)
-            .WithMany(u => u.Bets)
-            .HasForeignKey(b => b.UserId);
+    //     modelBuilder.Entity<Bet>()
+    //         .HasOne(b => b.User)
+    //         .WithMany(u => u.Bets)
+    //         .HasForeignKey(b => b.UserId);
 
-        modelBuilder.Entity<Match>()
-            .HasOne(m => m.HomeTeam)
-            .WithMany(t => t.HomeMatches)
-            .HasForeignKey(m => m.HomeTeamId)
-            .OnDelete(DeleteBehavior.Restrict);
+    //     modelBuilder.Entity<Match>()
+    //         .HasOne(m => m.HomeTeam)
+    //         .WithMany(t => t.HomeMatches)
+    //         .HasForeignKey(m => m.HomeTeamId)
+    //         .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Match>()
-            .HasOne(m => m.AwayTeam)
-            .WithMany(t => t.AwayMatches)
-            .HasForeignKey(m => m.AwayTeamId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
+    //     modelBuilder.Entity<Match>()
+    //         .HasOne(m => m.AwayTeam)
+    //         .WithMany(t => t.AwayMatches)
+    //         .HasForeignKey(m => m.AwayTeamId)
+    //         .OnDelete(DeleteBehavior.Restrict);
+    // }
 
 
 

@@ -1,14 +1,11 @@
 <template>
   <div class="min-h-screen bg-gray-100">
-    <!-- Header -->
     <header class="bg-indigo-600 text-white p-5 shadow-lg">
       <h1 class="text-3xl font-bold text-center">Welcome to the Tournament Platform</h1>
       <h3 v-if="errorMessage" class="alert text-red-500">{{ errorMessage }}</h3>
     </header>
 
-    <!-- Main Content -->
     <main class="container mx-auto p-5">
-      <!-- User Information Section -->
       <section class="bg-white shadow-md p-6 rounded-lg">
         <div v-if="user">
           <h2 class="text-xl font-bold mb-3">Hello, {{ user.email }}</h2>
@@ -38,7 +35,6 @@
           </label>
         </div>
 
-        <!-- Match Display -->
         <div v-if="matches.length">
           <div v-for="match in filteredMatches" :key="match.Id" class="match-card bg-white p-4 mb-4 shadow-md rounded-lg">
             <p>{{ match.HomeTeamName }} vs {{ match.AwayTeamName }}</p>
@@ -53,19 +49,16 @@
                 <option :value="'away'">{{ match.AwayTeamName }}</option>
               </select>
 
-              <!-- Input field for betting amount -->
               <div v-if="match.selectedTeam">
                 <label for="bet-amount">Amount to Bet:</label>
                 <input type="number" v-model="match.betAmount" id="bet-amount" min="1" :max="userBalance" placeholder="Enter bet amount" />
               </div>
 
-              <!-- Button to place bet -->
-              <button @click="placeBet(match.Id, match.selectedTeam, match.betAmount)" :disabled="!match.selectedTeam || !match.betAmount || match.betAmount <= 0">
+              <button @click="placeBet(match)" :disabled="!match.selectedTeam || !match.betAmount || match.betAmount <= 0">
                 Place Bet
               </button>
             </div>
 
-            <!-- Message for finished matches -->
             <div v-else>
               <p>Betting is closed for this match as it is finished.</p>
             </div>
@@ -78,7 +71,6 @@
 
 <script>
 import axios from "axios";
-
 export default {
   data() {
     return {
@@ -112,30 +104,36 @@ export default {
           const matchStartTime = new Date(match.Starttime);
           match.IsFinished = currentTime > matchStartTime;
 
+          // Ensure HomeTeamId and AwayTeamId are integers
+          match.HomeTeamId = parseInt(match.HomeTeamId, 10);
+          match.AwayTeamId = parseInt(match.AwayTeamId, 10);
+
           // Set team names after fetching teams
           match.HomeTeamName = this.getTeamName(match.HomeTeamId);
           match.AwayTeamName = this.getTeamName(match.AwayTeamId);
           
-          match.selectedTeam = ""; // Initially no team selected
-          match.betAmount = ""; // Initially no bet amount entered
+          match.selectedTeam = ""; 
+          match.betAmount = "";
           return match;
         });
       } catch (error) {
-        console.error("Error fetching matches:", error); // Log error
+        console.error("Error fetching matches:", error); 
         this.errorMessage = "Error fetching matches.";
       }
     },
 
     async fetchTeams() {
       try {
-        console.log("Fetching teams..."); // Log before API request
+        console.log("Fetching teams...");
         const response = await axios.get("http://localhost/pra-c3/frontend/database/getTeams.php");
-        console.log("Fetched teams:", response.data); // Log the response
-        this.teams = response.data;
-        // After teams are fetched, proceed with fetching matches
+        console.log("Fetched teams:", response.data);
+        this.teams = response.data.map(team => ({
+          ...team,
+          Id: parseInt(team.Id, 10) // Ensure team Id is an integer
+        }));
         this.fetchMatches();
       } catch (error) {
-        console.error("Error fetching teams:", error); // Log error
+        console.error("Error fetching teams:", error); 
         this.errorMessage = "Error fetching teams.";
       }
     },
@@ -145,62 +143,79 @@ export default {
       return team ? team.Name : "Unknown Team";
     },
 
-    async placeBet(matchId, selectedTeam, betAmount) {
-      if (!selectedTeam || !betAmount || betAmount <= 0) {
-        alert("Please select a team and enter a valid bet amount.");
-        return;
+async placeBet(match) {
+  if (!match.selectedTeam || !match.betAmount || match.betAmount <= 0) {
+    alert("Please select a team and enter a valid bet amount.");
+    return;
+  }
+
+  if (match.betAmount > this.userBalance) {
+    alert("Insufficient balance!");
+    return;
+  }
+
+  // Subtract the bet amount from the user's balance on the frontend
+  this.userBalance -= match.betAmount;
+
+  // Prepare the bet object
+  const bet = {
+    MatchId: parseInt(match.Id, 10), // Convert match Id to integer
+    Prediction: match.selectedTeam,
+    Amount: match.betAmount
+  };
+
+  console.log("Placing bet:", bet);
+  try {
+    const token = localStorage.getItem("userToken");
+    console.log("Token:", token);
+
+    const response = await axios.post("http://localhost:5116/api/bet", bet, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        userId: this.user.id  // Pass user ID in the params
       }
+    });
 
-      const bet = {
-        Match: { Id: matchId },
-        Prediction: selectedTeam,
-        Amount: betAmount,
-        UserId: this.user.Id 
-      };
+    // If the bet is successfully placed, update the user balance in localStorage
+    this.user.balance = this.userBalance;
+    localStorage.setItem("user", JSON.stringify(this.user));
 
-      console.log("Placing bet:", bet); // Log bet details before sending API request
-      try {
-        const token = localStorage.getItem("userToken");
-        console.log("Token:", token); // Log token being sent for authentication
-
-        const response = await axios.post("http://localhost:5116/api/bet", bet, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        console.log("Bet placed successfully:", response.data); // Log API response
-        alert("Bet placed successfully!");
-      } catch (error) {
-        console.error("Error placing bet:", error); // Log error if bet fails
-        this.errorMessage = error.response?.data || "An error occurred while placing the bet.";
-      }
-    },
+    console.log("Bet placed successfully:", response.data);
+    alert("Bet placed successfully!");
+  } catch (error) {
+    console.error("Error placing bet:", error);
+    // Revert the balance update if there's an error
+    this.userBalance += match.betAmount;  // Add back the bet amount
+    this.errorMessage = error.response?.data || "An error occurred while placing the bet.";
+  }
+},
 
     fetchUserData() {
       const user = JSON.parse(localStorage.getItem("user"));
       if (user) {
-        this.user = user; // Get user data from localStorage (or API)
-        this.userBalance = user.balance; // Set user balance
-        console.log("Fetched user data:", this.user); // Log the fetched user data
+        this.user = user;
+        this.userBalance = user.balance; 
+        console.log("Fetched user data:", this.user); 
       } else {
         this.errorMessage = "User data not found!";
-        console.error("User data not found!"); // Log error if no user data
+        console.error("User data not found!");
       }
     },
 
     logout() {
       localStorage.removeItem("user");
-      localStorage.removeItem("userToken"); // Remove the token upon logout
+      localStorage.removeItem("userToken");
       this.user = null;
-      this.userBalance = 1000; // Reset balance
-      console.log("User logged out."); // Log logout action
+      this.userBalance = 69; 
+      console.log("User logged out."); 
     }
   },
   created() {
-    console.log("Component created."); // Log when the component is created
-    this.fetchTeams(); // Fetch teams first
-    this.fetchUserData(); // Fetch user data on load
+    console.log("Component created.");
+    this.fetchTeams();
+    this.fetchUserData();
   }
 };
 </script>

@@ -10,6 +10,7 @@
         <router-link to="/tournooi">Tournooi</router-link>
         <router-link to="/bet">Bet</router-link>
         <router-link to="/scoreboard">Scoreboard</router-link>
+        <router-link to="/ManageBets">manage beds</router-link>
       </nav>
     </header>
     <router-view />

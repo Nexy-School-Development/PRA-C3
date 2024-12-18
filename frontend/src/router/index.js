@@ -8,7 +8,8 @@ import TournooienView from '../views/TournooienView.vue';
 import MatchView from '../views/MatchView.vue';
 import BetView from '../views/BetView.vue';
 import ScoreboardView from '../views/ScoreboardView.vue';
-import AuthLayout from '../layouts/AuthLayout.vue';
+import AuthLayout from '../layouts/AuthLayout.vue'; 
+import ManageBets from '../views/ManageBets.vue'; 
 
 const routes = [
   { path: '/', component: HomeView, meta: { requiresAuth: true } },
@@ -26,6 +27,8 @@ const routes = [
   { path: '/match', component: MatchView, meta: { requiresAuth: true } },
   { path: '/bet', component: BetView, meta: { requiresAuth: true } },
   { path: '/scoreboard', component: ScoreboardView, meta: { requiresAuth: true } },
+  { path: '/ManageBets', component: ManageBets, meta: { requiresAuth: true } },
+
 ];
 
 const router = createRouter({

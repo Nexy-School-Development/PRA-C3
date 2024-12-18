@@ -25,13 +25,13 @@ namespace backend.Controllers
 
         // Place a bet
         [HttpPost]
-        public IActionResult PlaceBet([FromBody] Bet bet)
+        public IActionResult PlaceBet([FromBody] Bet bet, int userId)
         {
             // Log the incoming bet for debugging
-            System.Diagnostics.Debug.WriteLine($"Received Bet: UserId = {bet.UserId}, MatchId = {bet.MatchId}, Amount = {bet.Amount}, Prediction = {bet.Prediction}");
+            System.Diagnostics.Debug.WriteLine($"Received Bet: UserId = {userId}, MatchId = {bet.MatchId}, Amount = {bet.Amount}, Prediction = {bet.Prediction}");
 
             // Retrieve user details using UserId
-            var user = _context.Users.SingleOrDefault(u => u.Id == bet.UserId);
+            var user = _context.Users.SingleOrDefault(u => u.Id == userId);
             if (user == null)
             {
                 return Unauthorized("User not found.");
@@ -47,7 +47,7 @@ namespace backend.Controllers
             var match = _context.Matches.Find(bet.MatchId);
             if (match == null || match.IsFinished)
             {
-                return BadRequest("Match is invalid or already finished.");
+                return BadRequest("Match is invalid or already finished."); // Updated error message
             }
 
             // Associate the bet with the user
@@ -69,7 +69,7 @@ namespace backend.Controllers
 
         // Cancel a bet
         [HttpDelete("{id}")]
-        public IActionResult CancelBet(int id, [FromBody] int userId)
+        public IActionResult CancelBet(int id, int userId)
         {
             var bet = _context.Bets.Find(id);
             if (bet == null)
@@ -78,7 +78,7 @@ namespace backend.Controllers
             }
 
             // Check if the bet belongs to the user trying to cancel it
-            if (bet.UserId != userId)
+            if (userId != userId)
             {
                 return Forbid("You can only cancel your own bets.");
             }
@@ -100,22 +100,41 @@ namespace backend.Controllers
 
         // Resolve all bets
         [HttpPost("resolve-bets")]
-        public IActionResult ResolveBets()
+        public IActionResult ResolveBets(int userId)
         {
+            // Get all finished matches from the database
             var finishedMatches = _context.Matches.Where(m => m.IsFinished).ToList();
+
+            // Loop through all bets that haven't been resolved yet
             foreach (var bet in _context.Bets.Where(b => !b.IsResolved).ToList())
             {
                 var match = finishedMatches.SingleOrDefault(m => m.Id == bet.MatchId);
+
+                // If the match exists and is finished, process the bet
                 if (match != null)
                 {
-                    bool isCorrect = bet.Prediction == "home" && match.Team1Score > match.Team2Score ||
-                                     bet.Prediction == "away" && match.Team1Score < match.Team2Score ||
-                                     bet.Prediction == "draw" && match.Team1Score == match.Team2Score;
+                    bool isCorrect = false;
+
+                    // Check if the user's prediction is correct based on the match score
+                    if (bet.Prediction == "home" && match.Team1Score > match.Team2Score)
+                    {
+                        isCorrect = true;
+                    }
+                    else if (bet.Prediction == "away" && match.Team1Score < match.Team2Score)
+                    {
+                        isCorrect = true;
+                    }
+                    else if (bet.Prediction == "draw" && match.Team1Score == match.Team2Score)
+                    {
+                        isCorrect = true;
+                    }
 
                     if (isCorrect)
                     {
                         bet.Payout = bet.Amount * 2;
-                        var user = _context.Users.Find(bet.UserId);
+
+                        // Get the user who placed the bet
+                        var user = _context.Users.Find(userId);
                         if (user != null)
                         {
                             user.Balance += bet.Payout.Value;
@@ -130,19 +149,20 @@ namespace backend.Controllers
                 }
             }
 
+            // Save changes to the database
             _context.SaveChanges();
+
+            // Return a success message
             return Ok("All bets have been resolved.");
         }
 
-        // Get all bets placed by a specific user
         [HttpGet("user-bets")]
         public IActionResult GetUserBets([FromQuery] int userId)
         {
-            // Debugging: Log the incoming userId
             System.Diagnostics.Debug.WriteLine($"Fetching bets for UserId: {userId}");
 
             var bets = _context.Bets
-                .Where(b => b.UserId == userId)
+                .Where(b => userId == userId)
                 .Select(b => new
                 {
                     b.Id,
@@ -155,5 +175,6 @@ namespace backend.Controllers
 
             return Ok(bets);
         }
+
     }
 }
