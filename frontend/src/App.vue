@@ -1,19 +1,18 @@
+<!-- filepath: /c:/Coderen/PRA-C3/frontend/src/App.vue -->
 <template>
   <div>
     <header>
       <nav>
         <router-link to="/">Home</router-link>
-        <router-link to="/login">Login</router-link>
-        <router-link to="/register">Register</router-link>
-        <router-link to="/dashboard">dashboard</router-link>
-          <router-link to="/match">match</router-link>
-          <router-link to="/team">team</router-link>
-          <router-link to="/tournooi">tournooi</router-link>
-          <router-link to="/bet">bet</router-link>
-          <router-link to="/scoreboard">scoreboard</router-link>
+        <router-link to="/dashboard">Dashboard</router-link>
+        <router-link to="/match">Match</router-link>
+        <router-link to="/team">Team</router-link>
+        <router-link to="/tournooi">Tournooi</router-link>
+        <router-link to="/bet">Bet</router-link>
+        <router-link to="/scoreboard">Scoreboard</router-link>
       </nav>
     </header>
-    <RouterView />
+    <router-view />
   </div>
 </template>
 
@@ -35,47 +34,7 @@ nav {
   margin-top: 2rem;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
 nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+  margin: 0 1rem;
 }
 </style>
