@@ -114,11 +114,11 @@ namespace backend.Controllers
 
                     if (isCorrect)
                     {
-                        bet.Payout = bet.Amount * 2; // Double the bet if correct
+                        bet.Payout = bet.Amount * 2;
                         var user = _context.Users.Find(bet.UserId);
                         if (user != null)
                         {
-                            user.Balance += bet.Payout.Value; // Add the payout to the user's balance
+                            user.Balance += bet.Payout.Value;
                         }
                     }
                     else
@@ -126,7 +126,7 @@ namespace backend.Controllers
                         bet.Payout = 0;
                     }
 
-                    bet.IsResolved = true; // Mark the bet as resolved
+                    bet.IsResolved = true;
                 }
             }
 

@@ -7,6 +7,7 @@ import TeamView from '../views/TeamView.vue';
 import TournooienView from '../views/TournooienView.vue';
 import MatchView from '../views/MatchView.vue';
 import BetView from '../views/BetView.vue';
+import ScoreboardView from '../views/ScoreboardView.vue';
 
 
 const routes = [
@@ -18,6 +19,7 @@ const routes = [
   { path: '/team', component: TeamView, meta: { requiresAuth: true } },
   { path: '/match', component: MatchView },
   { path: '/bet', component: BetView },
+  {path: '/scoreboard', component: ScoreboardView}
 ];
 
 const router = createRouter({

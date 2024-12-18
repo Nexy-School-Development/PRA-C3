@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using backend.Models;
 using System.Linq;
@@ -25,16 +24,34 @@ namespace backend.Controllers
                     t.Id,
                     t.Name,
                     t.Points,
-                    Players = _context.Users
-                        .Where(u => u.Id == t.Id)
-                        .Select(u => new { u.Id, u.Email })
-                        .ToList()
-                }).ToList();
+                    t.CreatorId
+                })
+                .ToList();
 
             return Ok(teams);
         }
 
-        [HttpPost("createteam")]
+        [HttpPut("changePoints/{id}")]
+        public IActionResult ChangePoints(int id, [FromBody] int newPoints)
+        {
+            var team = _context.Teams.Find(id);
+            if (team == null)
+            {
+                return NotFound("Team not found.");
+            }
+
+            team.Points = newPoints;
+            _context.SaveChanges();
+
+            return Ok(new
+            {
+                message = $"Points updated successfully for team ID {id}.",
+                teamId = team.Id,
+                newPoints = team.Points
+            });
+        }
+
+        [HttpPost("createTeam")]
         public IActionResult CreateTeam([FromBody] Team team)
         {
             _context.Teams.Add(team);
@@ -42,80 +59,7 @@ namespace backend.Controllers
             return CreatedAtAction(nameof(GetTeams), new { id = team.Id }, team);
         }
 
-        [HttpPut("update/{id}")]
-        public IActionResult UpdateMatch(int id, [FromBody] Match updatedMatch)
-        {
-            var match = _context.Matches.Find(id);
-            if (match == null)
-            {
-                return NotFound("Match not found");
-            }
-
-            // Find HomeTeam and AwayTeam by their ids from the database
-            var homeTeam = _context.Teams.Find(updatedMatch.HomeTeamId);
-            var awayTeam = _context.Teams.Find(updatedMatch.AwayTeamId);
-
-            if (homeTeam == null || awayTeam == null)
-            {
-                return BadRequest("One or both teams do not exist.");
-            }
-
-            match.HomeTeam = homeTeam;
-            match.AwayTeam = awayTeam;
-            match.Starttime = updatedMatch.Starttime;
-
-            _context.SaveChanges();
-            return Ok(match);
-        }
-
-        [HttpPost("{Id}/add-player/{userId}")]
-        public IActionResult AddPlayerToTeam(int Id, int userId)
-        {
-            var team = _context.Teams.Find(Id);
-            if (team == null)
-            {
-                return NotFound("Team not found.");
-            }
-
-            var user = _context.Users.Find(userId);
-            if (user == null)
-            {
-                return NotFound("User not found.");
-            }
-
-            if (user.Id == team.Id)
-            {
-                return BadRequest("User is already part of this team.");
-            }
-
-            user.Id = team.Id;
-            _context.SaveChanges();
-
-            return Ok("Player added to the team successfully.");
-        }
-
-        [HttpDelete("{Id}/remove-player/{userId}")]
-        public IActionResult RemovePlayerFromTeam(int Id, int userId)
-        {
-            var team = _context.Teams.Find(Id);
-            if (team == null)
-            {
-                return NotFound("Team not found.");
-            }
-
-            var user = _context.Users.Find(userId);
-            if (user == null || user.Id != team.Id)
-            {
-                return NotFound("Player not found in this team.");
-            }
-
-            user.Id = 0;
-            _context.SaveChanges();
-
-            return Ok("Player removed from the team successfully.");
-        }
-
-        [HttpDelete("Delete/{id}")]
+        [HttpDelete("delete/{id}")]
         public IActionResult DeleteTeam(int id)
         {
             var team = _context.Teams.Find(id);
@@ -128,6 +72,7 @@ namespace backend.Controllers
             _context.SaveChanges();
             return NoContent();
         }
+
 
         [HttpDelete("admin/delete/{id}")]
         public IActionResult AdminDeleteTeam(int id)

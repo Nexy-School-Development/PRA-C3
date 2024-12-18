@@ -10,6 +10,7 @@
           <router-link to="/team">team</router-link>
           <router-link to="/tournooi">tournooi</router-link>
           <router-link to="/bet">bet</router-link>
+          <router-link to="/scoreboard">scoreboard</router-link>
       </nav>
     </header>
     <RouterView />

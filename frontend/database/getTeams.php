@@ -13,7 +13,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$sql = "SELECT Id, Name FROM teams";
+$sql = "SELECT Id, Name, Points FROM teams";
 $result = $conn->query($sql);
 
 $teams = array();

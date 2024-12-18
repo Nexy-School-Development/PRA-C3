@@ -24,11 +24,9 @@
         </div>
       </section>
 
-      <!-- Matches Section -->
       <section class="mt-6">
         <h1>Available Matches</h1>
 
-        <!-- Filters for Finished and Upcoming Matches -->
         <div class="filters">
           <label>
             <input type="checkbox" v-model="filterFinished" />
@@ -47,7 +45,6 @@
             <p>{{ new Date(match.Starttime).toLocaleString() }}</p>
             <p>Status: {{ match.IsFinished ? 'Finished' : 'Upcoming' }}</p>
 
-            <!-- Betting options only if the match is not finished -->
             <div v-if="!match.IsFinished">
               <label for="team-select">Bet on:</label>
               <select v-model="match.selectedTeam" id="team-select">

@@ -1,35 +1,102 @@
 @import './base.css';
 
+/* Base styles for the app */
 #app {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   font-weight: normal;
+  background-color: #f3f3f3;
+  /* Light gray for a clean backdrop */
+  font-family: 'Arial', sans-serif;
+  border: 2px solid #006400;
+  /* Dark green border to represent football field lines */
+  border-radius: 10px;
 }
 
+/* Links and call-to-action buttons */
 a,
 .green {
   text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
+  color: hsla(160, 100%, 30%, 1);
+  /* A grassy green tone */
   transition: 0.4s;
   padding: 3px;
+  font-weight: bold;
 }
 
+a:hover {
+  background-color: hsla(160, 100%, 37%, 0.2);
+  border-radius: 4px;
+}
+
+/* Headings for football theme */
+h1,
+h2,
+h3 {
+  font-family: 'Impact', sans-serif;
+  color: #006400;
+  /* Dark green */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  /* Adds depth */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Specific football-themed highlights */
+#app .highlight {
+  background-color: hsla(60, 100%, 50%, 0.3);
+  /* Yellow card color highlight */
+  padding: 0.5rem;
+  border: 1px dashed hsla(60, 100%, 50%, 1);
+  /* Dashed border for flair */
+  border-radius: 5px;
+}
+
+/* Responsive hover effects */
 @media (hover: hover) {
   a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+    background-color: hsla(160, 100%, 37%, 0.3);
+    /* Slightly more intense hover effect */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 }
 
+/* Layout for large screens */
 @media (min-width: 1024px) {
   body {
     display: flex;
     place-items: center;
+    background: linear-gradient(to bottom, #a8e063, #56ab2f);
+    /* Gradient resembling a football field */
+    min-height: 100vh;
   }
 
   #app {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+    grid-template-columns: 2fr 1fr;
+    /* Larger content section, smaller sidebar */
+    gap: 2rem;
+    padding: 2rem;
+    background-color: #ffffff;
   }
+}
+
+/* Add a football pattern footer */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #006400;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+footer a {
+  color: #ffd700;
+  /* Gold, for trophies */
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
 }
