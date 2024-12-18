@@ -155,7 +155,7 @@ export default {
         Match: { Id: matchId },
         Prediction: selectedTeam,
         Amount: betAmount,
-        UserId: this.user.Id // Include UserId here
+        UserId: this.user.Id 
       };
 
       console.log("Placing bet:", bet); // Log bet details before sending API request
