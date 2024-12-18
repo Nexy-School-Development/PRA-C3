@@ -8,18 +8,17 @@ import TournooienView from '../views/TournooienView.vue';
 import MatchView from '../views/MatchView.vue';
 import BetView from '../views/BetView.vue';
 import ScoreboardView from '../views/ScoreboardView.vue';
-
-
+  
 const routes = [
-  { path: '/', component: HomeView },
+  { path: '/', component: HomeView, meta: { requiresAuth: true } },
   { path: '/login', component: LoginView },
-  { path: '/register', component: RegisterView },
-  { path: '/dashboard', component: DashboardView },
-  { path: '/tournooi', component: TournooienView },
+  { path: '/register', component: RegisterView, meta: { requiresAuth: true } },
+  { path: '/dashboard', component: DashboardView, meta: { requiresAuth: true } },
+  { path: '/tournooi', component: TournooienView, meta: { requiresAuth: true } },
   { path: '/team', component: TeamView, meta: { requiresAuth: true } },
-  { path: '/match', component: MatchView },
-  { path: '/bet', component: BetView },
-  {path: '/scoreboard', component: ScoreboardView}
+  { path: '/match', component: MatchView, meta: { requiresAuth: true } },
+  { path: '/bet', component: BetView, meta: { requiresAuth: true } },
+  { path: '/scoreboard', component: ScoreboardView, meta: { requiresAuth: true } }
 ];
 
 const router = createRouter({
